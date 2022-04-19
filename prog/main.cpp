@@ -18,30 +18,6 @@ int main() {
 	
 	doc.LoadFile("../arch_svg/wifi-1.svg");
 
-	// // Save the original file
-	// doc.SaveFile("/arch_svg/wifi-1.svg");
-
-	// Search for the 'svg' element
-	// tinyxml2::XMLElement *svg_Element = doc.FirstChildElement();
-	// tinyxml2::XMLElement *g_Element = svg_Element->FirstChildElement();
-
-	// // Create and insert a new element
-	// tinyxml2::XMLElement *newPath_Element = g_Element->InsertNewChildElement("path");
-	// newPath_Element->SetAttribute("d", "M200 0 L125 200 L275 200 Z");
-	// newPath_Element->SetAttribute("fill", "#04aa6d");
-
-	// // Save the file with one new element
-	// doc.SaveFile("wifi-2.svg");
-
-	// // Create and insert a new element
-	// newPath_Element = g_Element->InsertNewChildElement("path");
-	// newPath_Element->SetAttribute("d", "M250 0 L175 200 L325 200 Z");
-	// newPath_Element->SetAttribute("fill", "#fcba03");
-
-	// // Save the file with the last new element
-	// doc.SaveFile("wifi-3.svg");
-
-
 	//printSVG(doc, printer);
 	int puntos[] = {1592, 272, 1930, 163, 2184, 376, 1748, 440, 2285, 145};
 	int colores[] = {0};
@@ -75,7 +51,6 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 		string moveSection;
 		string curveSection;
 		char curveTo_Character = 'c';
-		vector<string> curves;
 
 		while (pathSelector) {
 			// Get the full value of 'd'
@@ -100,77 +75,56 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 			/* --> Converting curves values into numbers*/
 			// Save all curves of a single path in a vector
 			// Save the position of the separators
-			vector<string> curvesInPath;
+			
+			int start_cPos = 1;
+			int startPosition = 0;
 			size_t c_Position = 0;
-
-			vector<vector<int>> separatorsPositions;
-			size_t s_Position = 0;
-			int sP_Selector = 0;
-			bool readingCurves = true;
-
-			while (readingCurves) {
-				c_Position = curveSection.find_first_of("Cc", 1);
-				string actualCurve = "";
-				
-				if (c_Position != string::npos) {
-					actualCurve = curveSection.substr(0, c_Position);
-					curvesInPath.push_back(actualCurve);
-					curveSection.erase(0, c_Position);
-				}
-				else {
-					actualCurve = curveSection;
-					curvesInPath.push_back(actualCurve);
-					readingCurves = false;
-				}
-
-				separatorsPositions.push_back({});
-				s_Position = actualCurve.find_first_of(" ,-", 0);
-				for (; s_Position != string::npos; s_Position = actualCurve.find_first_of(" ,-", s_Position+1)) {
-					separatorsPositions[sP_Selector].push_back(s_Position);
-				}
-				sP_Selector++;
-			}
-
-			// Get the real points of the curves
-			vector<float> curvePoints[] = {{}, {}};
-			int moveValues[] = {0, 0};
-			int axisSelector = 0;
+			size_t separator1 = 0;
+			size_t separator2 = 0;
 			string point;
 
-			for (int i = 0; i < curvesInPath.size(); i++) {
-				axisSelector = 0;
-				string curve = curvesInPath[i];
-				moveValues[0] = 0;
-				moveValues[1] = 0;
-				
-				if (curve[0] == 'c') {
-					moveValues[0] = Move_x;
-					moveValues[1] = Move_y;
-				}
-				
-				if (curve[1] >= '0') {
-					point = curve.substr(1, separatorsPositions[i][0] - 1);
-					curvePoints[0].push_back(abs(stof(point)) + moveValues[0]);
-					axisSelector = 1;
-				}
-				
-				int j = 0;
-				int sizeV_Separators = separatorsPositions[i].size();
-				for (; j < sizeV_Separators; j++) {
-					int separator1 = separatorsPositions[i][j];
-					int separator2 = (j == sizeV_Separators - 1) ? curve.size() : separatorsPositions[i][j + 1];
+			vector<float> curvePoints[] = {{}, {}};
+			float moveValues[] = { (curveSection[c_Position]/99) * Move_x, (curveSection[c_Position]/99) * Move_y };
+			int axisSelector = 0;
+			char actualCurve = curveSection[c_Position];
 
-					switch (curve[separator1]) {
+			while (true) {
+
+				c_Position = curveSection.find_first_of("Cc", start_cPos);
+				separator1 = curveSection.find_first_of(" -,", startPosition);
+				separator2 = curveSection.find_first_of(" -,", separator1 + 1);
+
+				separator2 = (separator2 == string::npos) ? curveSection.length() : separator2;
+
+				if (separator1 == string::npos)
+					break;
+
+				startPosition = separator1 + 1;
+				if (separator2 > c_Position) {
+					
+					actualCurve = curveSection[c_Position];
+					curveSection[c_Position] = ' ';
+
+					startPosition = c_Position;
+					separator2 = c_Position;
+					start_cPos = c_Position + 1;
+				}
+				
+				switch (curveSection[separator1]) {
 					case '-':
-						point = curve.substr(separator1, separator2 - separator1);
+						point = curveSection.substr(separator1, separator2 - separator1);
 						break;
 					
 					default:
-						point = curve.substr(separator1 + 1, separator2 - separator1 - 1);
+						point = curveSection.substr(separator1 + 1, separator2 - separator1 - 1);
 						break;
-					}
-					curvePoints[axisSelector].push_back(abs(stof(point)) + moveValues[axisSelector]);
-					axisSelector = (1 - axisSelector);
+				}
+				curvePoints[axisSelector].push_back(abs(stof(point)) + moveValues[axisSelector]);
+				axisSelector = (1 - axisSelector);
+
+				if (curveSection[c_Position] == ' ') {
+					moveValues[0] = (actualCurve/99) * Move_x;
+					moveValues[1] = (actualCurve/99) * Move_y;
 				}
 			}
 
@@ -195,7 +149,6 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 					cout << "\tMajor Y: " << majorY;
 					cout << "\tPunto Y: " << puntos[i+1];
 					cout << "\tMinor Y: " << minorY << endl;
-					break;
 				}
 			}
 		
