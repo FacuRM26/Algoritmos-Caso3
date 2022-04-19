@@ -4,6 +4,11 @@ seleccion::seleccion(int userPoints[], int size_userPoints, tinyxml2::XMLDocumen
     this->userPoints = userPoints;
     this->size_userPoints = size_userPoints;
     this->doc = &doc;
+
+    // Save all the paths in a vector
+    tinyxml2::XMLElement* elementSelector;
+	elementSelector = this->doc->FirstChildElement();
+    getAllPaths(elementSelector);
 }
 
 // Converting moves values into coordinates numbers
@@ -60,7 +65,7 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
         }
 
         point = curveSection.substr(separator1 + 1, separator2 - separator1 - 1);
-        curvePoints[axisSelector].push_back(abs(stof(point)) + moveValues[axisSelector]);
+        curvePoints[axisSelector].push_back(stof(point) + moveValues[axisSelector]);
         axisSelector = (1 - axisSelector);
 
         if (curveSection[c_Position] == ' ') {
@@ -102,12 +107,6 @@ bool seleccion::pathIntersect(vector<float> curvePoints[]) {
 
 // Select paths that intersect the user points and save them in a file
 void seleccion::selectPaths() {
-    tinyxml2::XMLElement* elementSelector;
-	elementSelector = this->doc->FirstChildElement();
-
-    // Save all the paths in a vector
-    getAllPaths(elementSelector);
-
     string att_Value;
 	string moveSection;
 	string curveSection;
