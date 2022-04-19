@@ -69,8 +69,20 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
         }
     }
 }
+
+void seleccion::getAllPaths(tinyxml2::XMLElement* element) {
+    if (element) {
+        if (!string(element->Value()).compare("path")) {
+            this->paths.push_back(element);
+        }
+        if (!element->NoChildren()) {
+            getAllPaths(element->FirstChildElement());
+        }
+        getAllPaths(element->NextSiblingElement());
+    }
+}
+// Check if there is any user-points inside the curve points
 bool seleccion::pathIntersect(vector<float> curvePoints[]) {
-    // Check if there is any user-points inside the curve points
     sort(curvePoints[0].begin(), curvePoints[0].end());
     sort(curvePoints[1].begin(), curvePoints[1].end());
 
@@ -90,49 +102,40 @@ bool seleccion::pathIntersect(vector<float> curvePoints[]) {
 
 // Select paths that intersect the user points and save them in a file
 void seleccion::selectPaths() {
-    // Search for the 'g' element
-	tinyxml2::XMLElement* elementSelector;
-	elementSelector = this->doc->FirstChildElement()->FirstChildElement();
+    tinyxml2::XMLElement* elementSelector;
+	elementSelector = this->doc->FirstChildElement();
 
-	while (elementSelector) {
-		if (!string(elementSelector->Value()).compare("g")) {
-			break;
-		}
-		elementSelector = elementSelector->NextSiblingElement();
-	}
+    // Save all the paths in a vector
+    getAllPaths(elementSelector);
 
-    // Scan all the paths in 'g'
-	if (elementSelector) {
-        tinyxml2::XMLElement* pathSelector = elementSelector->FirstChildElement();
-		string att_Value;
-		string moveSection;
-		string curveSection;
-		char curveTo_Character = 'c';
+    string att_Value;
+	string moveSection;
+	string curveSection;
+	char curveTo_Character = 'c';
 
-        while (pathSelector) {
-            // Get the full value of 'd'
-			att_Value = pathSelector->FindAttribute("d")->Value();
+    for (tinyxml2::XMLElement* pathSelector : paths) {
+        // Get the full value of 'd'
+		att_Value = pathSelector->FindAttribute("d")->Value();
 
-			// Get the move and curve section
-			int positionCurveTo = att_Value.find_first_of("Cc");
-			moveSection = att_Value.substr(0, positionCurveTo);
-			curveSection = att_Value.substr(positionCurveTo, att_Value.length() - positionCurveTo);
+		// Get the move and curve section
+		int positionCurveTo = att_Value.find_first_of("Cc");
+		moveSection = att_Value.substr(0, positionCurveTo);
+		curveSection = att_Value.substr(positionCurveTo, att_Value.length() - positionCurveTo);
 
-            // Get the values of move
-            float Move_x = 0;
-            float Move_y = 0;
-            getMoveValues(moveSection, &Move_x, &Move_y);
+        // Get the values of move
+        float Move_x = 0;
+        float Move_y = 0;
+        getMoveValues(moveSection, &Move_x, &Move_y);
 
-            // Get all the values inside the curve paths
-            vector<float> curvePoints[] = {{}, {}};
-            getCurveValues(curveSection, curvePoints, Move_x, Move_y);
+        // Get all the values inside the curve paths
+        vector<float> curvePoints[] = {{}, {}};
+        getCurveValues(curveSection, curvePoints, Move_x, Move_y);
 
-            // See if the path intersect some userPoint
-            if (pathIntersect(curvePoints)) {
-                pathSelector->SetAttribute("fill", "#00ee66");
-            }
-            pathSelector = pathSelector->NextSiblingElement();
+        // See if the path intersect some userPoint
+        if (pathIntersect(curvePoints)) {
+            pathSelector->SetAttribute("fill", "#00ee66");
         }
+        pathSelector = pathSelector->NextSiblingElement();
     }
     this->doc->SaveFile("nuevoModificado.svg");
 }

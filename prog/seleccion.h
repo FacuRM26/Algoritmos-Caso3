@@ -14,9 +14,11 @@ private:
     int* userPoints;
     int size_userPoints;
     tinyxml2::XMLDocument* doc;
+    vector<tinyxml2::XMLElement*> paths;
 
     void getMoveValues(string moveSection, float *Move_x, float *Move_y);
     void getCurveValues(string curveSection, vector<float> curvePoints[], float Move_x, float Move_y);
+    void getAllPaths(tinyxml2::XMLElement* element);
     bool pathIntersect(vector<float> curvePoints[]);
 
 public:
