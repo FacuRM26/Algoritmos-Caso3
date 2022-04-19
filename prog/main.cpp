@@ -58,10 +58,11 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 	tinyxml2::XMLElement* elementSelector;
 	elementSelector = doc.FirstChildElement()->FirstChildElement();
 
+	string elemento = "g";
 	int contador = 0;
 
 	while (elementSelector) {
-		if (!elementSelector->NoChildren()) {
+		if (!string(elementSelector->Value()).compare("g")) {
 			break;
 		}
 		elementSelector = elementSelector->NextSiblingElement();
@@ -80,14 +81,8 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 			// Get the full value of 'd'
 			att_Value = pathSelector->FindAttribute("d")->Value();
 
-			// Check if is absolute or relative
-			if (att_Value[0] == 'M')
-				curveTo_Character = 'C';
-			else
-				curveTo_Character = 'c';
-
 			// Get the move and curve section
-			int positionCurveTo = att_Value.find(curveTo_Character);
+			int positionCurveTo = att_Value.find_first_of("Cc");
 			moveSection = att_Value.substr(0, positionCurveTo);
 			curveSection = att_Value.substr(positionCurveTo, att_Value.length() - positionCurveTo);
 
@@ -98,87 +93,114 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 				moveSection.erase(0, 1);
 			
 			// Convert string values into numbers
-			int separatorPosition = moveSection.find(',');
-			float Move_x = stof(moveSection.substr(0, separatorPosition));
-			float Move_y = stof(moveSection.substr(separatorPosition + 1, moveSection.length() - separatorPosition));
+			int comaPosition = moveSection.find(',');
+			float Move_x = stof(moveSection.substr(0, comaPosition));
+			float Move_y = stof(moveSection.substr(comaPosition + 1, moveSection.length() - comaPosition));
 
 			/* --> Converting curves values into numbers*/
-			
 			// Save all curves of a single path in a vector
+			// Save the position of the separators
 			vector<string> curvesInPath;
 			size_t c_Position = 0;
-			while (true) {
-				c_Position = curveSection.find_first_of("Cc", 1);
 
+			vector<vector<int>> separatorsPositions;
+			size_t s_Position = 0;
+			int sP_Selector = 0;
+			bool readingCurves = true;
+
+			while (readingCurves) {
+				c_Position = curveSection.find_first_of("Cc", 1);
+				string actualCurve = "";
+				
 				if (c_Position != string::npos) {
-					curvesInPath.push_back(curveSection.substr(0, c_Position));
+					actualCurve = curveSection.substr(0, c_Position);
+					curvesInPath.push_back(actualCurve);
 					curveSection.erase(0, c_Position);
 				}
 				else {
-					curvesInPath.push_back(curveSection);
-					break;
+					actualCurve = curveSection;
+					curvesInPath.push_back(actualCurve);
+					readingCurves = false;
 				}
+
+				separatorsPositions.push_back({});
+				s_Position = actualCurve.find_first_of(" ,-", 0);
+				for (; s_Position != string::npos; s_Position = actualCurve.find_first_of(" ,-", s_Position+1)) {
+					separatorsPositions[sP_Selector].push_back(s_Position);
+				}
+				sP_Selector++;
 			}
-			
-			// Save all points of the curves
-			size_t startPoint = 0;
-			size_t separator1 = 0;
-			size_t separator2 = 0;
-			float auxMoveX = 0.0;
-			float auxMoveY = 0.0;
-			char curveType;
-			vector<float> curvePoints_X;
-			vector<float> curvePoints_Y;
-			
-			for (string curve : curvesInPath) {
-				startPoint = 0;
-				separator1 = 0;
-				separator2 = 0;
 
-				curveType = curve[0];
-				curve.erase(0, 1);
+			// Get the real points of the curves
+			vector<float> curvePoints[] = {{}, {}};
+			int moveValues[] = {0, 0};
+			int axisSelector = 0;
+			string point;
 
-				if (curveType == 'c') {
-					auxMoveX = Move_x;
-					auxMoveY = Move_y;
+			for (int i = 0; i < curvesInPath.size(); i++) {
+				axisSelector = 0;
+				string curve = curvesInPath[i];
+				moveValues[0] = 0;
+				moveValues[1] = 0;
+				
+				if (curve[0] == 'c') {
+					moveValues[0] = Move_x;
+					moveValues[1] = Move_y;
 				}
+				
+				if (curve[1] >= '0') {
+					point = curve.substr(1, separatorsPositions[i][0] - 1);
+					curvePoints[0].push_back(abs(stof(point)) + moveValues[0]);
+					axisSelector = 1;
+				}
+				
+				int j = 0;
+				int sizeV_Separators = separatorsPositions[i].size();
+				for (; j < sizeV_Separators; j++) {
+					int separator1 = separatorsPositions[i][j];
+					int separator2 = (j == sizeV_Separators - 1) ? curve.size() : separatorsPositions[i][j + 1];
 
-				while (separator2 != string::npos) {
-					separator1 = curve.find_first_of(",", startPoint);
-					separator2 = curve.find_first_of(",", separator1 + 1);
-
-					int limitPoint2 = (separator2 != string::npos) ? separator2 - separator1 - 1 : curve.length();
-
-					string point1 = curve.substr(startPoint, separator1 - startPoint);
-					string point2 = curve.substr(separator1 + 1, limitPoint2);
-
-					curvePoints_X.push_back(abs(stof(point1)) + auxMoveX);
-					curvePoints_Y.push_back(abs(stof(point2)) + auxMoveY);
-
-					startPoint = separator2 + 1;
+					switch (curve[separator1]) {
+					case '-':
+						point = curve.substr(separator1, separator2 - separator1);
+						break;
+					
+					default:
+						point = curve.substr(separator1 + 1, separator2 - separator1 - 1);
+						break;
+					}
+					curvePoints[axisSelector].push_back(abs(stof(point)) + moveValues[axisSelector]);
+					axisSelector = (1 - axisSelector);
 				}
 			}
 
 			// Check if there is any user-points inside the curve points
-			sort(curvePoints_X.begin(), curvePoints_X.end());
-			sort(curvePoints_Y.begin(), curvePoints_Y.end());
+			sort(curvePoints[0].begin(), curvePoints[0].end());
+			sort(curvePoints[1].begin(), curvePoints[1].end());
 
-			float majorX = curvePoints_X[curvePoints_X.size() - 1];
-			float minorX = curvePoints_X[0];
+			float majorX = curvePoints[0][curvePoints[0].size() - 1];
+			float minorX = curvePoints[0][0];
 			
-			float majorY = curvePoints_Y[curvePoints_Y.size() - 1];
-			float minorY = curvePoints_Y[0];
+			float majorY = curvePoints[1][curvePoints[1].size() - 1];
+			float minorY = curvePoints[1][0];
 
+			contador++;
 			for (int i = 0; i < puntosSize; i+=2) {
 
-				if ((puntos[i] >= minorX && puntos[i] <= majorX) && (puntos[i+1] >= minorY && puntos[i+1] <= majorY))
-					cout << contador++ << ": Path Intersecado " << att_Value << endl;
-
+				if ((puntos[i] >= minorX && puntos[i] <= majorX) && (puntos[i+1] >= minorY && puntos[i+1] <= majorY)) {
+					cout << "\n" << contador << ": Path Intersecado\n";
+					cout << "\tMajor X: " << majorX;
+					cout << "\tPunto X: " << puntos[i];
+					cout << "\tMinor X: " << minorX << endl;
+					cout << "\tMajor Y: " << majorY;
+					cout << "\tPunto Y: " << puntos[i+1];
+					cout << "\tMinor Y: " << minorY << endl;
+					break;
+				}
 			}
 		
 			pathSelector = pathSelector->NextSiblingElement();
 		}
 	}
-	
 	return;
 }
