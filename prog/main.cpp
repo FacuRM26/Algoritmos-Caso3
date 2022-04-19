@@ -19,10 +19,10 @@ int main() {
 	doc.LoadFile("../arch_svg/wifi-1.svg");
 
 	//printSVG(doc, printer);
-	int puntos[] = {1592, 272, 1930, 163, 2184, 376, 1748, 440, 2285, 145};
+	int puntos[] = {2065,3638, 1712,2834, 1183,2187, 3791,2442};
 	int colores[] = {0};
 
-	seleccion(puntos, 10, colores, 1, doc);
+	seleccion(puntos, 8, colores, 1, doc);
 
 	return 0;
 }
@@ -89,7 +89,6 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 			char actualCurve = curveSection[c_Position];
 
 			while (true) {
-
 				c_Position = curveSection.find_first_of("Cc", start_cPos);
 				separator1 = curveSection.find_first_of(" -,", startPosition);
 				separator2 = curveSection.find_first_of(" -,", separator1 + 1);
@@ -98,6 +97,12 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 
 				if (separator1 == string::npos)
 					break;
+
+				if (curveSection[0] != ' ' && (curveSection[1] >= '0' && curveSection[1] <= '9')) {
+					separator2 = separator1;
+					separator1 = 0;
+					curveSection[0] = ' ';
+				}
 
 				startPosition = separator1 + 1;
 				if (separator2 > c_Position) {
@@ -109,16 +114,8 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 					separator2 = c_Position;
 					start_cPos = c_Position + 1;
 				}
-				
-				switch (curveSection[separator1]) {
-					case '-':
-						point = curveSection.substr(separator1, separator2 - separator1);
-						break;
-					
-					default:
-						point = curveSection.substr(separator1 + 1, separator2 - separator1 - 1);
-						break;
-				}
+
+				point = curveSection.substr(separator1 + 1, separator2 - separator1 - 1);
 				curvePoints[axisSelector].push_back(abs(stof(point)) + moveValues[axisSelector]);
 				axisSelector = (1 - axisSelector);
 
@@ -142,6 +139,7 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 			for (int i = 0; i < puntosSize; i+=2) {
 
 				if ((puntos[i] >= minorX && puntos[i] <= majorX) && (puntos[i+1] >= minorY && puntos[i+1] <= majorY)) {
+					pathSelector->SetAttribute("fill", "#00ee66");
 					cout << "\n" << contador << ": Path Intersecado\n";
 					cout << "\tMajor X: " << majorX;
 					cout << "\tPunto X: " << puntos[i];
@@ -154,6 +152,7 @@ void seleccion(int puntos[], int puntosSize, int colores[], int coloresSize, tin
 		
 			pathSelector = pathSelector->NextSiblingElement();
 		}
+		doc.SaveFile("nuevoModificado.svg");
 	}
 	return;
 }
