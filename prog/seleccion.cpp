@@ -1,6 +1,6 @@
 #include "seleccion.h"
 
-seleccion::seleccion(int userPoints[], int size_userPoints, tinyxml2::XMLDocument &doc) {
+seleccion::seleccion(int userPoints[], int size_userPoints, int userColors[], int size_userColors, tinyxml2::XMLDocument &doc) {
     this->userPoints = userPoints;
     this->size_userPoints = size_userPoints;
     this->doc = &doc;
@@ -9,6 +9,32 @@ seleccion::seleccion(int userPoints[], int size_userPoints, tinyxml2::XMLDocumen
     tinyxml2::XMLElement* elementSelector;
 	elementSelector = this->doc->FirstChildElement();
     getAllPaths(elementSelector);
+
+    // Save all the colors into RGB values
+    saveRGBColors(userColors, size_userColors);
+}
+
+// Save all the paths in a vector
+void seleccion::getAllPaths(tinyxml2::XMLElement* element) {
+    if (element) {
+        if (!string(element->Value()).compare("path")) {
+            this->paths.push_back(element);
+        }
+        if (!element->NoChildren()) {
+            getAllPaths(element->FirstChildElement());
+        }
+        getAllPaths(element->NextSiblingElement());
+    }
+}
+void seleccion::saveRGBColors(int userColors[], int size) {
+    for (int i = 0; i < size; i++) {
+        int color = userColors[i];
+        int b = color%256; color = color/256;
+        int g = color%256; color = color/256;
+        int r = color%256;
+
+        this->userColors.push_back({r, g, b});
+    }
 }
 
 // Converting moves values into coordinates numbers
@@ -22,7 +48,6 @@ void seleccion::getMoveValues(string moveSection, float *Move_x, float *Move_y) 
     *Move_x = stof(moveSection.substr(0, comaPosition));
     *Move_y = stof(moveSection.substr(comaPosition + 1, moveSection.length() - comaPosition));
 }
-
 // Converting curves values (relative and absolute) into coordinates numbers(absolutes)
 void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[], float Move_x, float Move_y) {
     // Search for the positions of the separators and convert the values between them
@@ -40,9 +65,7 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
     while (true) {
         c_Position = curveSection.find_first_of("Cc", start_cPos);
         separator1 = curveSection.find_first_of(" -,", startPosition);
-        separator2 = curveSection.find_first_of(" -,", separator1 + 1);
-
-        separator2 = (separator2 == string::npos) ? curveSection.length() : separator2;
+        separator2 = (separator2 != string::npos) ? curveSection.find_first_of(" -,", separator1 + 1) : curveSection.length();
 
         if (separator1 == string::npos)
             break;
@@ -64,6 +87,8 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
             start_cPos = c_Position + 1;
         }
 
+        separator1 = (curveSection[separator1] == '-') ? separator1 - 1 : separator1;
+
         point = curveSection.substr(separator1 + 1, separator2 - separator1 - 1);
         curvePoints[axisSelector].push_back(stof(point) + moveValues[axisSelector]);
         axisSelector = (1 - axisSelector);
@@ -72,18 +97,6 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
             moveValues[0] = (actualCurve / 99) * Move_x;
             moveValues[1] = (actualCurve / 99) * Move_y;
         }
-    }
-}
-
-void seleccion::getAllPaths(tinyxml2::XMLElement* element) {
-    if (element) {
-        if (!string(element->Value()).compare("path")) {
-            this->paths.push_back(element);
-        }
-        if (!element->NoChildren()) {
-            getAllPaths(element->FirstChildElement());
-        }
-        getAllPaths(element->NextSiblingElement());
     }
 }
 // Check if there is any user-points inside the curve points
@@ -104,20 +117,31 @@ bool seleccion::pathIntersect(vector<float> curvePoints[]) {
     }
     return false;
 }
+// Check if there is any color that matches with the user colors
+bool seleccion::checkColorIntersection(int color) {
+    return true;
+}
 
 // Select paths that intersect the user points and save them in a file
 void seleccion::selectPaths() {
     string att_Value;
 	string moveSection;
 	string curveSection;
+    int color_Value = 0x000000;
 	char curveTo_Character = 'c';
 
     for (tinyxml2::XMLElement* pathSelector : paths) {
+        // Get the color attribute
+        if (pathSelector->FindAttribute("color"))
+            color_Value = stoi(pathSelector->FindAttribute("color")->Value());
+        if (!checkColorIntersection(color_Value))
+            continue;
+
         // Get the full value of 'd'
 		att_Value = pathSelector->FindAttribute("d")->Value();
 
 		// Get the move and curve section
-		int positionCurveTo = att_Value.find_first_of("Cc");
+		int positionCurveTo = att_Value.find_first_of("CcHhVvLl");
 		moveSection = att_Value.substr(0, positionCurveTo);
 		curveSection = att_Value.substr(positionCurveTo, att_Value.length() - positionCurveTo);
 
@@ -132,9 +156,9 @@ void seleccion::selectPaths() {
 
         // See if the path intersect some userPoint
         if (pathIntersect(curvePoints)) {
-            pathSelector->SetAttribute("fill", "#00ee66");
+            pathSelector->SetAttribute("fill", "#0000ff");
+            pathsIntersected.push_back(pathSelector);
         }
-        pathSelector = pathSelector->NextSiblingElement();
     }
     this->doc->SaveFile("nuevoModificado.svg");
 }
