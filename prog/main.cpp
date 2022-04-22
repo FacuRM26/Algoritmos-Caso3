@@ -14,10 +14,10 @@ int main() {
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLPrinter printer;
 	
-	doc.LoadFile("../arch_svg/wifi-1.svg");
+	doc.LoadFile("../arch_svg/wifi-2.svg");
 	//printSVG(doc, printer);
 
-	int puntos[] = {2500, 3500};
+	int puntos[] = {2443, 3867};
 	int colores[] = {0xeb4034, 0x17218f, 0xd4c62c, 0x54f54e};
 
 	seleccion Seleccion(puntos, 2, colores, 4, doc);

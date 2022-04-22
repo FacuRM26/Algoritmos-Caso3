@@ -51,52 +51,51 @@ void seleccion::getMoveValues(string moveSection, float *Move_x, float *Move_y) 
 // Converting curves values (relative and absolute) into coordinates numbers(absolutes)
 void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[], float Move_x, float Move_y) {
     // Search for the positions of the separators and convert the values between them
-    int start_cPos = 1;
-    int startPosition = 0;
-    size_t c_Position = 0;
+    string separatorsChars = " -,CcHhVvLlZz";
     size_t separator1 = 0;
     size_t separator2 = 0;
     string point;
 
-    float moveValues[] = {(curveSection[c_Position] / 99) * Move_x, (curveSection[c_Position] / 99) * Move_y};
+    float moveValues[] = {0, 0};
     int axisSelector = 0;
-    char actualCurve = curveSection[c_Position];
+    bool horizontalCase = false;
 
-    while (true) {
-        c_Position = curveSection.find_first_of("Cc", start_cPos);
-        separator1 = curveSection.find_first_of(" -,", startPosition);
-        separator2 = (separator2 != string::npos) ? curveSection.find_first_of(" -,", separator1 + 1) : curveSection.length();
+    separator1 = curveSection.find_first_of(separatorsChars, 0);
 
-        if (separator1 == string::npos)
-            break;
+    while (toupper(curveSection[separator1]) != 'Z') {
+        separator2 = curveSection.find_first_of(separatorsChars, separator1 + 1);
+        separator2 = (separator2-1 != separator1) ? separator2 : curveSection.find_first_of(separatorsChars, separator2 + 1);        
 
-        if (curveSection[0] != ' ' && (curveSection[1] >= '0' && curveSection[1] <= '9')) {
-            separator2 = separator1;
-            separator1 = 0;
-            curveSection[0] = ' ';
+        switch (toupper(curveSection[separator1])) {
+            case 'H':
+                axisSelector = 0;
+                horizontalCase = true;
+                break;
+            case 'V':
+                axisSelector = 1;
+                break;
         }
-
-        startPosition = separator1 + 1;
-        if (separator2 > c_Position) {
-
-            actualCurve = curveSection[c_Position];
-            curveSection[c_Position] = ' ';
-
-            startPosition = c_Position;
-            separator2 = c_Position;
-            start_cPos = c_Position + 1;
+        if (curveSection[separator1] >= 'a') {
+            moveValues[0] = Move_x;
+            moveValues[1] = Move_y;
+        }
+        else if (curveSection[separator1] >= 'A') {
+            moveValues[0] = 0;
+            moveValues[1] = 0;
         }
 
         separator1 = (curveSection[separator1] == '-') ? separator1 - 1 : separator1;
 
         point = curveSection.substr(separator1 + 1, separator2 - separator1 - 1);
         curvePoints[axisSelector].push_back(stof(point) + moveValues[axisSelector]);
-        axisSelector = (1 - axisSelector);
-
-        if (curveSection[c_Position] == ' ') {
-            moveValues[0] = (actualCurve / 99) * Move_x;
-            moveValues[1] = (actualCurve / 99) * Move_y;
+        
+        if (!horizontalCase)
+            axisSelector = (1 - axisSelector);
+        else {
+            axisSelector = 0;
+            horizontalCase = false;
         }
+        separator1 = separator2;
     }
 }
 // Check if there is any user-points inside the curve points
@@ -119,7 +118,26 @@ bool seleccion::pathIntersect(vector<float> curvePoints[]) {
 }
 // Check if there is any color that matches with the user colors
 bool seleccion::checkColorIntersection(int color) {
-    return true;
+    int b = color%256; color = color/256;
+	int g = color%256; color = color/256;
+	int r = color%256;
+
+    int diff1 = 0;
+	int diff2 = 0;
+	int diff3 = 0;
+    float distance = 0.0;
+
+    for (auto userColor : this->userColors) {
+        diff1 = abs(r - userColor[0]);
+        diff2 = abs(g - userColor[1]);
+        diff3 = abs(b - userColor[2]);
+        distance = 100.0 - (((float)(diff1 + diff2 + diff3))/(3.0*255.0)*100.0);
+
+        if (distance >= 0.5)
+            return true;
+    }
+
+    return false;
 }
 
 // Select paths that intersect the user points and save them in a file
@@ -132,8 +150,9 @@ void seleccion::selectPaths() {
 
     for (tinyxml2::XMLElement* pathSelector : paths) {
         // Get the color attribute
+        color_Value = 0x000000;
         if (pathSelector->FindAttribute("color"))
-            color_Value = stoi(pathSelector->FindAttribute("color")->Value());
+            color_Value = stoi(pathSelector->FindAttribute("color")->Value(), 0, 16);
         if (!checkColorIntersection(color_Value))
             continue;
 
@@ -152,13 +171,13 @@ void seleccion::selectPaths() {
 
         // Get all the values inside the curve paths
         vector<float> curvePoints[] = {{}, {}};
-        getCurveValues(curveSection, curvePoints, Move_x, Move_y);
+        getCurveValues(curveSection, curvePoints, Move_x, Move_y);            
 
         // See if the path intersect some userPoint
         if (pathIntersect(curvePoints)) {
-            pathSelector->SetAttribute("fill", "#0000ff");
             pathsIntersected.push_back(pathSelector);
         }
+
     }
     this->doc->SaveFile("nuevoModificado.svg");
 }
