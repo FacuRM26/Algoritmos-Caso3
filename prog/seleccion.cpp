@@ -133,7 +133,7 @@ bool seleccion::checkColorIntersection(int color) {
         diff3 = abs(b - userColor[2]);
         distance = 100.0 - (((float)(diff1 + diff2 + diff3))/(3.0*255.0)*100.0);
 
-        if (distance >= 0.5)
+        if (distance >= 70)
             return true;
     }
 
@@ -151,8 +151,11 @@ void seleccion::selectPaths() {
     for (tinyxml2::XMLElement* pathSelector : paths) {
         // Get the color attribute
         color_Value = 0x000000;
-        if (pathSelector->FindAttribute("color"))
-            color_Value = stoi(pathSelector->FindAttribute("color")->Value(), 0, 16);
+        const tinyxml2::XMLAttribute* fillAttribute = pathSelector->FindAttribute("fill");
+
+        if (fillAttribute) {
+            color_Value = stoi(string(fillAttribute->Value()).substr(1, 6), 0, 16);
+        }
         if (!checkColorIntersection(color_Value))
             continue;
 
@@ -175,6 +178,7 @@ void seleccion::selectPaths() {
 
         // See if the path intersect some userPoint
         if (pathIntersect(curvePoints)) {
+            pathSelector->SetAttribute("fill", "black");
             pathsIntersected.push_back(pathSelector);
         }
 
