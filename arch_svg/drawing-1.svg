@@ -36,13 +36,6 @@
       id="defs2" />
    <g>
       <path
-<<<<<<< HEAD
-         style="fill:#ff00ff;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         d="m 63.314928,-2.6061412 c 0,0 -11.446741,-0.093563 -21.720242,17.8743022 C 31.321172,33.236026 67.15852,11.954802 63.314928,-2.6061412 Z"
-         id="path867-7-7-71-1-5-7-8" />
-      <path
-=======
->>>>>>> 772b891d429a000782dd87bcf7ce363174025dbd
          style="fill:#008000;stroke:none;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="m 206.53285,8.6813109 c -4.98113,11.8301891 0,19.3018871 4.35849,17.4339611 4.35849,-1.867924 -4.35849,-17.4339611 -4.35849,-17.4339611 z"
          id="path859-07" />
