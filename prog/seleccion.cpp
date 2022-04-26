@@ -49,7 +49,7 @@ void seleccion::getMoveValues(string moveSection, float *Move_x, float *Move_y) 
     *Move_y = stof(moveSection.substr(comaPosition + 1, moveSection.length() - comaPosition));
 }
 // Converting curves values (relative and absolute) into coordinates numbers(absolutes)
-void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[], float Move_x, float Move_y) {
+void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[], float Move_x, float Move_y, string* types) {
     // Search for the positions of the separators and convert the values between them
     string separatorsChars = " -,CcHhVvLlZz";
     size_t separator1 = 0;
@@ -66,7 +66,11 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
         separator2 = curveSection.find_first_of(separatorsChars, separator1 + 1);
         separator2 = (separator2-1 != separator1) ? separator2 : curveSection.find_first_of(separatorsChars, separator2 + 1);        
 
-        switch (toupper(curveSection[separator1])) {
+        char currentSeparator = toupper(curveSection[separator1]);
+        if (currentSeparator >= 'A')
+            types->push_back(toupper(curveSection[separator1]));
+
+        switch (currentSeparator) {
             case 'H':
                 axisSelector = 0;
                 horizontalCase = true;
@@ -99,18 +103,19 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
     }
 }
 // Check if there is any user-points inside the curve points
-bool seleccion::pathIntersect(vector<float> curvePoints[]) {
+bool seleccion::pathIntersect(vector<float> curvePoints[], float* majorX, float* minorX, float* majorY, float* minorY) {
     sort(curvePoints[0].begin(), curvePoints[0].end());
     sort(curvePoints[1].begin(), curvePoints[1].end());
 
-    float majorX = curvePoints[0][curvePoints[0].size() - 1];
-    float minorX = curvePoints[0][0];
+    *majorX = curvePoints[0][curvePoints[0].size() - 1];
+    *minorX = curvePoints[0][0];
 
-    float majorY = curvePoints[1][curvePoints[1].size() - 1];
-    float minorY = curvePoints[1][0];
+    *majorY = curvePoints[1][curvePoints[1].size() - 1];
+    *minorY = curvePoints[1][0];
 
     for (int i = 0; i < this->size_userPoints; i += 2) {
-        if ((this->userPoints[i] >= minorX && this->userPoints[i] <= majorX) && (this->userPoints[i + 1] >= minorY && this->userPoints[i + 1] <= majorY)) {
+        if ((this->userPoints[i] >= *minorX && this->userPoints[i] <= *majorX) &&
+            (this->userPoints[i + 1] >= *minorY && this->userPoints[i + 1] <= *majorY)) {
             return true;
         }
     }
@@ -136,7 +141,6 @@ bool seleccion::checkColorIntersection(int color) {
         if (distance >= 70)
             return true;
     }
-
     return false;
 }
 
@@ -173,17 +177,36 @@ void seleccion::selectPaths() {
         getMoveValues(moveSection, &Move_x, &Move_y);
 
         // Get all the values inside the curve paths
+        string typePath_Chars = "";
         vector<float> curvePoints[] = {{}, {}};
-        getCurveValues(curveSection, curvePoints, Move_x, Move_y);            
+        getCurveValues(curveSection, curvePoints, Move_x, Move_y, &typePath_Chars);
 
         // See if the path intersect some userPoint
-        if (pathIntersect(curvePoints)) {
-            pathSelector->SetAttribute("fill", "black");
-            pathsIntersected.push_back(pathSelector);
+        float majorX = 0.0;
+        float minorX = 0.0;
+        float majorY = 0.0;
+        float minorY = 0.0;
+        if (pathIntersect(curvePoints, &majorX, &minorX, &majorY, &minorY)) {
+            cout << curveSection << endl;
+            typePath.push_back(typePath_Chars);
+            pathValues.push_back(curvePoints[0]);
+            pathValues.push_back(curvePoints[1]);
+            pathsArea.push_back(majorX);
+            pathsArea.push_back(minorX);
+            pathsArea.push_back(majorY);
+            pathsArea.push_back(minorY);
         }
-
     }
-    this->doc->SaveFile("nuevoModificado.svg");
+}
+
+vector<string> seleccion::getTypePath() {
+    return this->typePath;
+}
+vector<float> seleccion::getPathsArea() {
+    return this->pathsArea;
+}
+vector<vector<float>> seleccion::getPathValues() {
+    return this->pathValues;
 }
 
 
