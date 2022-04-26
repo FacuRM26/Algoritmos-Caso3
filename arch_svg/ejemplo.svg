@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+<<<<<<< HEAD
 	 viewBox="0 0 5011.389 4110.461" enable-background="new 0 0 5011.389 4110.461" xml:space="preserve">
 <g>
     <path d="M150 0 L75 200 L225 200 Z" />
+=======
+	 viewBox="10 10 210 212" enable-background="new 0 0 210 110" xml:space="preserve">
+<g>
+<path fill="#3FBF85" id="_x31_291" opacity="10" d="M42,50 c-11-12-67-76-64-66
+		C50,95,105,05,99,112.049z"/>
+>>>>>>> 772b891d429a000782dd87bcf7ce363174025dbd
 </g>
 </svg>
