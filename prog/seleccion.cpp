@@ -48,6 +48,7 @@ void seleccion::getMoveValues(string moveSection, float *Move_x, float *Move_y) 
     *Move_x = stof(moveSection.substr(0, comaPosition));
     *Move_y = stof(moveSection.substr(comaPosition + 1, moveSection.length() - comaPosition));
 }
+
 // Converting curves values (relative and absolute) into coordinates numbers(absolutes)
 void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[], float Move_x, float Move_y, string* types) {
     // Search for the positions of the separators and convert the values between them
@@ -64,42 +65,47 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
 
     while (toupper(curveSection[separator1]) != 'Z') {
         separator2 = curveSection.find_first_of(separatorsChars, separator1 + 1);
-        separator2 = (separator2-1 != separator1) ? separator2 : curveSection.find_first_of(separatorsChars, separator2 + 1);        
+        separator2 = (separator2-1 != separator1) ? separator2 : curveSection.find_first_of(separatorsChars, separator2 + 1);
 
-        char currentSeparator = toupper(curveSection[separator1]);
-        if (currentSeparator >= 'A')
-            types->push_back(toupper(curveSection[separator1]));
+        if (separator2 != string::npos) {
 
-        switch (currentSeparator) {
-            case 'H':
+            char currentSeparator = toupper(curveSection[separator1]);
+            if (currentSeparator >= 'A')
+                types->push_back(toupper(curveSection[separator1]));
+
+            switch (currentSeparator) {
+                case 'H':
+                    axisSelector = 0;
+                    horizontalCase = true;
+                    break;
+                case 'V':
+                    axisSelector = 1;
+                    break;
+            }
+            if (curveSection[separator1] >= 'a') {
+                moveValues[0] = Move_x;
+                moveValues[1] = Move_y;
+            }
+            else if (curveSection[separator1] >= 'A') {
+                moveValues[0] = 0;
+                moveValues[1] = 0;
+            }
+
+            separator1 = (curveSection[separator1] == '-') ? separator1 - 1 : separator1;
+
+            point = curveSection.substr(separator1 + 1, separator2 - separator1 - 1);
+            curvePoints[axisSelector].push_back(stof(point) + moveValues[axisSelector]);
+            
+            if (!horizontalCase)
+                axisSelector = (1 - axisSelector);
+            else {
                 axisSelector = 0;
-                horizontalCase = true;
-                break;
-            case 'V':
-                axisSelector = 1;
-                break;
+                horizontalCase = false;
+            }
+            separator1 = separator2;
         }
-        if (curveSection[separator1] >= 'a') {
-            moveValues[0] = Move_x;
-            moveValues[1] = Move_y;
-        }
-        else if (curveSection[separator1] >= 'A') {
-            moveValues[0] = 0;
-            moveValues[1] = 0;
-        }
-
-        separator1 = (curveSection[separator1] == '-') ? separator1 - 1 : separator1;
-
-        point = curveSection.substr(separator1 + 1, separator2 - separator1 - 1);
-        curvePoints[axisSelector].push_back(stof(point) + moveValues[axisSelector]);
-        
-        if (!horizontalCase)
-            axisSelector = (1 - axisSelector);
-        else {
-            axisSelector = 0;
-            horizontalCase = false;
-        }
-        separator1 = separator2;
+        else
+            break;
     }
 }
 // Check if there is any user-points inside the curve points
@@ -152,16 +158,18 @@ void seleccion::selectPaths() {
     int color_Value = 0x000000;
 	char curveTo_Character = 'c';
 
+    int countPaths = 0;
+
     for (tinyxml2::XMLElement* pathSelector : paths) {
         // Get the color attribute
         color_Value = 0x000000;
         const tinyxml2::XMLAttribute* fillAttribute = pathSelector->FindAttribute("fill");
 
-        if (fillAttribute) {
-            color_Value = stoi(string(fillAttribute->Value()).substr(1, 6), 0, 16);
-        }
-        if (!checkColorIntersection(color_Value))
-            continue;
+        // if (fillAttribute) {
+        //     color_Value = stoi(string(fillAttribute->Value()).substr(1, 6), 0, 16);
+        // }
+        // if (!checkColorIntersection(color_Value))
+        //     continue;
 
         // Get the full value of 'd'
 		att_Value = pathSelector->FindAttribute("d")->Value();
@@ -187,7 +195,8 @@ void seleccion::selectPaths() {
         float majorY = 0.0;
         float minorY = 0.0;
         if (pathIntersect(curvePoints, &majorX, &minorX, &majorY, &minorY)) {
-            cout << curveSection << endl;
+            countPaths++;
+
             typePath.push_back(typePath_Chars);
             pathValues.push_back(curvePoints[0]);
             pathValues.push_back(curvePoints[1]);
@@ -197,6 +206,7 @@ void seleccion::selectPaths() {
             pathsArea.push_back(minorY);
         }
     }
+    cout << "\nPaths Intersecados: " << countPaths;
 }
 
 vector<string> seleccion::getTypePath() {
