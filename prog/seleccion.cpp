@@ -1,5 +1,12 @@
 #include "seleccion.h"
 
+void seleccion::attach(Observer* router) {
+    this->current_router = router;
+}
+void seleccion::notify() {
+    this->current_router->update();
+}
+
 seleccion::seleccion(int userPoints[], int size_userPoints, int userColors[], int size_userColors, tinyxml2::XMLDocument &doc) {
     this->userPoints = userPoints;
     this->size_userPoints = size_userPoints;
@@ -165,11 +172,11 @@ void seleccion::selectPaths() {
         color_Value = 0x000000;
         const tinyxml2::XMLAttribute* fillAttribute = pathSelector->FindAttribute("fill");
 
-        // if (fillAttribute) {
-        //     color_Value = stoi(string(fillAttribute->Value()).substr(1, 6), 0, 16);
-        // }
-        // if (!checkColorIntersection(color_Value))
-        //     continue;
+        if (fillAttribute) {
+            color_Value = stoi(string(fillAttribute->Value()).substr(1, 6), 0, 16);
+        }
+        if (!checkColorIntersection(color_Value))
+            continue;
 
         // Get the full value of 'd'
 		att_Value = pathSelector->FindAttribute("d")->Value();
@@ -189,6 +196,10 @@ void seleccion::selectPaths() {
         vector<float> curvePoints[] = {{}, {}};
         getCurveValues(curveSection, curvePoints, Move_x, Move_y, &typePath_Chars);
 
+        // ------- PRUEBA
+        vector<float> tempX = curvePoints[0];
+        vector<float> tempY = curvePoints[1];
+
         // See if the path intersect some userPoint
         float majorX = 0.0;
         float minorX = 0.0;
@@ -196,10 +207,13 @@ void seleccion::selectPaths() {
         float minorY = 0.0;
         if (pathIntersect(curvePoints, &majorX, &minorX, &majorY, &minorY)) {
             countPaths++;
+            
+            tempX.push_back(Move_x);
+            tempY.push_back(Move_y);
 
             typePath.push_back(typePath_Chars);
-            pathValues.push_back(curvePoints[0]);
-            pathValues.push_back(curvePoints[1]);
+            pathValues.push_back(tempX);
+            pathValues.push_back(tempY);
             pathsArea.push_back(majorX);
             pathsArea.push_back(minorX);
             pathsArea.push_back(majorY);
