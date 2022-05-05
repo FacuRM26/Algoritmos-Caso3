@@ -44,25 +44,25 @@ void calcularDistancia(float angulo, vector<float> pathArea, float scX, float sc
 		referencePoint_X = pathArea[0];
 		referencePoint_Y = pathArea[2];
 		actualLineX = sizeX;
-		actualLineY = 0.0;
+		actualLineY = sizeY;
 	}
 	else if (degg >= 90 && degg <= 180) {
 		referencePoint_X = pathArea[1];
 		referencePoint_Y = pathArea[2];
 		actualLineX = 0.0;
-		actualLineY = 0.0;
+		actualLineY = sizeY;
 	}
 	else if (degg >= 180 && degg <= 270) {
 		referencePoint_X = pathArea[1];
 		referencePoint_Y = pathArea[3];
 		actualLineX = 0.0;
-		actualLineY = sizeY;
+		actualLineY = 0.0;
 	}
 	else if (degg >= 270) {
 		referencePoint_X = pathArea[0];
 		referencePoint_Y = pathArea[3];
 		actualLineX = sizeX;
-		actualLineY = sizeY;
+		actualLineY = 0.0;
 	}
 
 	// Hacer la formula de la funcion lineal
@@ -82,18 +82,24 @@ void calcularDistancia(float angulo, vector<float> pathArea, float scX, float sc
 		interseccionX = (actualLineY - b) / m;
 		interseccionY = (m * actualLineX) + b;
 
-		cout << "Puntos\n";
+		if (interseccionX < 0)
+			interseccionX = abs(interseccionX) + sizeX;
+		if (interseccionY < 0)
+			interseccionY = abs(interseccionY) + sizeY;
+
+		cout << "Puntos: " << referencePoint_X << " " << referencePoint_Y << endl;
+		cout << "Lineas: " << actualLineX << " " << actualLineY << endl;
+		cout << "Intersecciones\n";
+		cout << interseccionX << endl << interseccionY << endl << endl;
 
 		if (interseccionY < interseccionX) {
 			point1 = referencePoint_X - actualLineX;
 			point2 = referencePoint_Y - interseccionY;
-			cout << "1Parte: " << actualLineX << " " << interseccionY << endl;
 			distancia = sqrt((point1 * point1) + (point2 * point2));
 		}
 		else {
 			point1 = referencePoint_X - interseccionX;
 			point2 = referencePoint_Y - actualLineY;
-			cout << "2Parte: " << interseccionX << " " << actualLineY << endl;
 			distancia = sqrt((point1 * point1) + (point2 * point2));
 		}
 	}
@@ -153,7 +159,7 @@ int main() {
 
 	vector<float> puntos = {1600.0, 500.0, 2000.0, 1500.0};
 
-	calcularDistancia(2.7925, puntos, stof(sizeX), stof(sizeY), doc);
+	calcularDistancia(6.1086, puntos, stof(sizeX), stof(sizeY), doc);
 
 	// int puntos[] = {2000, 2000, 2500, 3700, 1800, 300, 3605, 1123, 5642, 800};
 	// int colores[] = {0xff0000, 0x0000ff};
