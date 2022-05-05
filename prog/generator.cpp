@@ -18,7 +18,7 @@ void Generator::generateFile() {
     vector<vector<float>> tempPositionPaths = *(this->positionPaths);
     int positionSelector = 0;
     int moveSelector = 0;
-
+    
     for (string path : this->typePaths) {
 
         int charSelector = 0;
@@ -26,9 +26,9 @@ void Generator::generateFile() {
 
         vector<float> valuesX = tempPositionPaths[positionSelector];
         vector<float> valuesY = tempPositionPaths[positionSelector + 1];
-
+        
         attributePath += to_string(valuesX[valuesX.size() - 1]) + " " + to_string(valuesY[valuesY.size() - 1]) + " ";
-
+        
         newPath = this->doc->NewElement("path");
 
         int x_Selector = 1;
@@ -41,7 +41,7 @@ void Generator::generateFile() {
         int y2 = 0;
         int x3 = 0;
         int y3 = 0;
-
+        
         while (charSelector <= path.size()) {
 
             actualType = path[charSelector++];

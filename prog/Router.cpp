@@ -1,16 +1,21 @@
 #include "Router.h"
 
-void Router::update() {
+void Router::update()
+{
     calculate_route();
 }
-void Router::attach(Observer* obs) {
+void Router::attach(Observer *obs)
+{
     this->generator = obs;
 }
-void Router::notify() {
+// tipo
+void Router::notify()
+{
     this->generator->update();
 }
 
-Router::Router(tinyxml2::XMLDocument &pDoc, vector<vector<float>> pValuesPaths, int pFrames, float pAngle, vector<vector<float>> *pPositionPaths) {
+Router::Router(tinyxml2::XMLDocument &pDoc, vector<vector<float>> pValuesPaths, int pFrames, float pAngle, vector<vector<float>> *pPositionPaths)
+{
     this->doc = &pDoc;
     this->valuesPaths = pValuesPaths;
     this->frames = pFrames;
@@ -19,7 +24,8 @@ Router::Router(tinyxml2::XMLDocument &pDoc, vector<vector<float>> pValuesPaths, 
     sizeBox(pDoc, sizeX, sizeY);
 }
 
-void Router::sizeBox(tinyxml2::XMLDocument &pDoc, string &pSizeX, string &pSizeY) {
+void Router::sizeBox(tinyxml2::XMLDocument &pDoc, string &pSizeX, string &pSizeY)
+{
     tinyxml2::XMLElement *pRoot = pDoc.FirstChildElement("svg");
     string view = pRoot->FindAttribute("viewBox")->Value();
     view.erase(0, view.find(' ') + 1);
@@ -29,7 +35,8 @@ void Router::sizeBox(tinyxml2::XMLDocument &pDoc, string &pSizeX, string &pSizeY
     pSizeY = view.substr(0, view.find(' '));
 }
 
-void Router::calculate_route() {
+void Router::calculate_route()
+{
     float vX = this->frames;
     float vY = 0;
     this->angle = (this->angle * 3.1415) / 180.0;
@@ -40,44 +47,74 @@ void Router::calculate_route() {
     vX = new_vX;
     vY = new_vY;
     int selector=0;
-    int cont_Frames=0;
+    vector<Path> paths;
+    // cout << "SizeY: " << sizeY << endl;
+    // cout << "vY" << vY << endl;
+    
+    // cout<<"Size: "<<valuesPaths.size()<<endl;
+    while (!(selector >= valuesPaths.size()))
+    {   
 
-    while (cont_Frames < this->frames) {
         vector<float> vectorX = valuesPaths[selector];
         vector<float> vectorY = valuesPaths[selector + 1];
 
-        bool continuar = true;
-        for (int j = 0; j < vectorX.size(); j++)
-        {
-            if (vectorX[j] > stoi(sizeX))
-            {
-                continuar = false;
-                break;
-            }
-            vectorX[j] += vX;
-        }
-        for (int j = 0; j < vectorY.size() && continuar == true; j++)
-        {
-            if (vectorY[j] > stoi(sizeY))
-            {
-                break;
-            }
-            vectorY[j] += vY;
-        }
+        float distanceX = frames / abs(((stoi(sizeX) - vectorX[0]) / vX));
+        float distanceY = frames / abs(((stoi(sizeY) - vectorY[0]) / vY));
+        Path newPath(vectorX, vectorY);
 
-        valuesPaths[selector] = vectorX;
-        valuesPaths[selector + 1] = vectorY;
+        if (distanceX > distanceY){
+            newPath.setFrames(round(distanceX));
+            //cout<<"distanceX: "<<distanceX<<endl;
+            }
+        else{
+            //cout<<"distanceY: "<<distanceY<<endl;
+            //cout<<"distanceY:"<<stoi(sizeY) - vectorY[0]<<endl;
+            newPath.setFrames(round(distanceY));
+        }
+        paths.push_back(newPath);
+        selector+=2;
 
-        selector += 2;
+    }
+    //cout<<"salio"<<endl;
+    
+    int cont_Frames = 0;
+    int listSelector = 0;
+    //cout<<paths.size()<<endl;
+    //cout<<paths[0].getAmount()<<endl;
+    while (cont_Frames < this->frames)
+    {
+        // cout<<cont_Frames<<endl;
+        // cout<<"listselector: "<<listSelector<<endl;
+        vector<float> vectorX = paths[listSelector].getPathsX();
+        vector<float> vectorY = paths[listSelector].getPathsY();
+
+
+        if (paths[listSelector].movePath())
+        {
+            for (int j = 0; j < vectorX.size(); j++)
+            {
+                vectorX[j] += vX;
+            }
+            for (int j = 0; j < vectorY.size(); j++)
+            {
+                vectorY[j] += vY;
+            }
+            paths[listSelector].setVectors(vectorX, vectorY);
+        }
+        listSelector++;
         this->positionPaths->push_back(vectorX);
         this->positionPaths->push_back(vectorY);
-        
-        if(selector >= valuesPaths.size()){
+        //cont_Frames++;
+        if (listSelector >= paths.size())
+        {
+            cout<<positionPaths->size()<<endl;
             notify();
-            selector = 0;
+            cout<<"salio"<<endl;
+            listSelector = 0;
             cont_Frames++;
-
             this->positionPaths->clear();
         }
+        
     }
+    return;
 }
