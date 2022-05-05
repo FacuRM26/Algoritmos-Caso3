@@ -12,12 +12,12 @@ private:
     tinyxml2::XMLDocument* doc;
     vector<string> typePaths;
 
-    vector<vector<float>>* positionPaths;
+    vector<vector<float>> positionPaths;
 
 public:
-    generacion(tinyxml2::XMLDocument &doc, vector<string> typePaths, vector<vector<float>> *positionPaths);
+    generacion(tinyxml2::XMLDocument &doc, vector<string> typePaths);
 
-    void update();
+    void update(vector<vector<float>> positionPaths);
     void generateFile();
 };
 

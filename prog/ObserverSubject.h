@@ -1,9 +1,12 @@
 #ifndef SUBJECT_OBSERVER_H
 #define SUBJECT_OBSERVER_H
 
+#include <vector>
+using namespace std;
+
 class Observer {
 public:
-    virtual void update() = 0;
+    virtual void update(vector<vector<float>> positionPaths) = 0;
 };
 
 class Subject {

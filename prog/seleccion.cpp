@@ -4,7 +4,7 @@ void seleccion::attach(Observer* router) {
     this->current_router = router;
 }
 void seleccion::notify() {
-    this->current_router->update();
+    this->current_router->update({});
 }
 
 seleccion::seleccion(int userPoints[], int size_userPoints, int userColors[], int size_userColors, tinyxml2::XMLDocument &doc) {

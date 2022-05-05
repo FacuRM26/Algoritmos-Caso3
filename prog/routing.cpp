@@ -1,21 +1,21 @@
 #include "Routing.h"
 
-void Routing::update() {
+void Routing::update(vector<vector<float>> positionPaths) {
     calculate_route();
 }
 void Routing::attach(Observer* obs) {
     this->generator = obs;
 }
 void Routing::notify() {
-    this->generator->update();
+    this->generator->update(this->positionPaths);
 }
 
-Routing::Routing(tinyxml2::XMLDocument &doc, vector<vector<float>> valuesPaths, int frames, float angulo, vector<vector<float>> *positionPaths) {
+Routing::Routing(tinyxml2::XMLDocument &doc, vector<vector<float>> valuesPaths, int frames, float angulo) {
     this->doc = &doc;
     this->valuesPaths = valuesPaths;
     this->frames = frames;
     this->angulo = angulo;
-    this->positionPaths = positionPaths;
+    this->positionPaths = {};
     sizeBox(doc, sizeX, sizeY);
 }
 
@@ -69,15 +69,15 @@ void Routing::calculate_route() {
         valuesPaths[selector + 1] = vectorY;
 
         selector += 2;
-        this->positionPaths->push_back(vectorX);
-        this->positionPaths->push_back(vectorY);
+        this->positionPaths.push_back(vectorX);
+        this->positionPaths.push_back(vectorY);
         
         if(selector >= valuesPaths.size()){
             notify();
             selector = 0;
             cont_Frames++;
 
-            this->positionPaths->clear();
+            this->positionPaths.clear();
         }
     }
 }

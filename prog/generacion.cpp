@@ -1,12 +1,12 @@
 #include "generacion.h"
 
-generacion::generacion(tinyxml2::XMLDocument &doc, vector<string> typePaths, vector<vector<float>> *positionPaths) {
+generacion::generacion(tinyxml2::XMLDocument &doc, vector<string> typePaths) {
     this->doc = &doc;
     this->typePaths = typePaths;
-    this->positionPaths = positionPaths;
 }
 
-void generacion::update() {
+void generacion::update(vector<vector<float>> positionPaths) {
+    this->positionPaths = positionPaths;
     generateFile();
 }
 
@@ -15,7 +15,7 @@ void generacion::generateFile() {
     tinyxml2::XMLElement* groupPaths = this->doc->NewElement("g");
     tinyxml2::XMLElement* newPath;
 
-    vector<vector<float>> tempPositionPaths = *(this->positionPaths);
+    vector<vector<float>> tempPositionPaths = this->positionPaths;
     int positionSelector = 0;
     int moveSelector = 0;
 

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 5011.389 4110.461" enable-background="new 0 0 5011.389 4110.461" xml:space="preserve" style="background-color:#696969">
+    <g>
+        <circle cx="500" cy="1500" r="40" fill="red"/>
+        <circle cx="1600" cy="1500" r="40" fill="red"/>
+        <circle cx="500" cy="2000" r="40" fill="red"/>
+        <circle cx="1600" cy="2000" r="40" fill="red"/>
+        <line x1="5011.389" y1="0" x2="5011.389" y2="10000" style="stroke:rgb(255,0,0);stroke-width:2"/>
+        <line x1="0" y1="0" x2="0" y2="10000" style="stroke:rgb(255,0,0);stroke-width:2"/>
+        <circle cx="490" cy="2003.64" r="40" fill="blue"/>
+        <circle cx="480" cy="2007.28" r="40" fill="blue"/>
+        <circle cx="470" cy="2010.92" r="40" fill="blue"/>
+        <circle cx="460" cy="2014.5601" r="40" fill="blue"/>
+        <circle cx="450" cy="2018.2001" r="40" fill="blue"/>
+        <circle cx="440" cy="2021.8401" r="40" fill="blue"/>
+        <circle cx="430" cy="2025.4801" r="40" fill="blue"/>
+        <circle cx="420" cy="2029.1201" r="40" fill="blue"/>
+        <circle cx="410" cy="2032.7601" r="40" fill="blue"/>
+        <circle cx="400" cy="2036.4001" r="40" fill="blue"/>
+        <circle cx="390" cy="2040.0402" r="40" fill="blue"/>
+        <circle cx="380" cy="2043.6802" r="40" fill="blue"/>
+        <circle cx="370" cy="2047.3202" r="40" fill="blue"/>
+        <circle cx="360" cy="2050.9602" r="40" fill="blue"/>
+        <circle cx="350" cy="2054.6001" r="40" fill="blue"/>
+        <circle cx="340" cy="2058.24" r="40" fill="blue"/>
+        <circle cx="330" cy="2061.8799" r="40" fill="blue"/>
+        <circle cx="320" cy="2065.5198" r="40" fill="blue"/>
+        <circle cx="310" cy="2069.1597" r="40" fill="blue"/>
+        <circle cx="300" cy="2072.7996" r="40" fill="blue"/>
+        <circle cx="290" cy="2076.4395" r="40" fill="blue"/>
+        <circle cx="280" cy="2080.0793" r="40" fill="blue"/>
+        <circle cx="270" cy="2083.7192" r="40" fill="blue"/>
+        <circle cx="260" cy="2087.3591" r="40" fill="blue"/>
+        <circle cx="250" cy="2090.999" r="40" fill="blue"/>
+        <circle cx="240" cy="2094.6389" r="40" fill="blue"/>
+        <circle cx="230" cy="2098.2788" r="40" fill="blue"/>
+        <circle cx="220" cy="2101.9187" r="40" fill="blue"/>
+        <circle cx="210" cy="2105.5586" r="40" fill="blue"/>
+        <circle cx="200" cy="2109.1985" r="40" fill="blue"/>
+        <circle cx="190" cy="2112.8384" r="40" fill="blue"/>
+        <circle cx="180" cy="2116.4783" r="40" fill="blue"/>
+        <circle cx="170" cy="2120.1182" r="40" fill="blue"/>
+        <circle cx="160" cy="2123.7581" r="40" fill="blue"/>
+        <circle cx="150" cy="2127.3979" r="40" fill="blue"/>
+        <circle cx="140" cy="2131.0378" r="40" fill="blue"/>
+        <circle cx="130" cy="2134.6777" r="40" fill="blue"/>
+        <circle cx="120" cy="2138.3176" r="40" fill="blue"/>
+        <circle cx="110" cy="2141.9575" r="40" fill="blue"/>
+        <circle cx="100" cy="2145.5974" r="40" fill="blue"/>
+        <circle cx="90" cy="2149.2373" r="40" fill="blue"/>
+        <circle cx="80" cy="2152.8772" r="40" fill="blue"/>
+        <circle cx="70" cy="2156.5171" r="40" fill="blue"/>
+        <circle cx="60" cy="2160.157" r="40" fill="blue"/>
+        <circle cx="50" cy="2163.7969" r="40" fill="blue"/>
+        <circle cx="40" cy="2167.4368" r="40" fill="blue"/>
+        <circle cx="30" cy="2171.0767" r="40" fill="blue"/>
+        <circle cx="20" cy="2174.7166" r="40" fill="blue"/>
+        <circle cx="10.000001" cy="2178.3564" r="40" fill="blue"/>
+        <circle cx="1.9073486e-06" cy="2181.9963" r="40" fill="blue"/>
+    </g>
+</svg>

@@ -18,7 +18,7 @@ private:
 
     Observer* generator = 0;
 
-    vector<vector<float>>* positionPaths;
+    vector<vector<float>> positionPaths;
     vector<vector<float>> valuesPaths;
     tinyxml2::XMLDocument* doc;
     float angulo;
@@ -27,10 +27,10 @@ private:
     void sizeBox(tinyxml2::XMLDocument &doc, string &sizeX, string &sizeY);
 
 public:
-    Routing(tinyxml2::XMLDocument &doc, vector<vector<float>> valuesPaths, int frames, float angulo, vector<vector<float>> *positionPaths);
+    Routing(tinyxml2::XMLDocument &doc, vector<vector<float>> valuesPaths, int frames, float angulo);
     void calculate_route();
 
-    void update();
+    void update(vector<vector<float>> positionPaths);
     void attach(Observer* obs);
     void notify();
 
