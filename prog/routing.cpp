@@ -1,130 +1,65 @@
-#include "routing.h"
+#include "Routing.h"
 
-void Routing::update(vector<Path*> pPathsIntersected)
+Routing::Routing(tinyxml2::XMLDocument &doc, vector<vector<float>> valuesPaths)
 {
-    cout << "\nIniciando proceso de routing...\n";
-    this->pathsIntersected = pPathsIntersected;
-    calculate_route();
-}
-void Routing::attach(Observer *obs)
-{
-    this->generator = obs;
-}
-// tipo
-void Routing::notify() {
-    cout << "\nIniciando proceso de generacion...\n";
-    this->generator->update(this->pathsIntersected);
-    cout << "\nGeneracion terminada, volviendo al routing...\n";
+    this->doc = &doc;
+    this->valuesPaths = valuesPaths;
+    sizeBox(doc, sizeX, sizeY);
 }
 
-Routing::Routing(tinyxml2::XMLDocument &pDoc, int pFrames, float pAngle)
+void Routing::sizeBox(tinyxml2::XMLDocument &doc, string &sizeX, string &sizeY)
 {
-    this->doc = &pDoc;
-    this->frames = pFrames;
-    this->angle = pAngle;
-    sizeBox(pDoc, sizeX, sizeY);
-}
-
-void Routing::sizeBox(tinyxml2::XMLDocument &pDoc, string &pSizeX, string &pSizeY)
-{
-    tinyxml2::XMLElement *pRoot = pDoc.FirstChildElement("svg");
+    tinyxml2::XMLElement *pRoot = doc.FirstChildElement("svg");
     string view = pRoot->FindAttribute("viewBox")->Value();
     view.erase(0, view.find(' ') + 1);
     view.erase(0, view.find(' ') + 1);
-    pSizeX = view.substr(0, view.find(' '));
+    sizeX = view.substr(0, view.find(' '));
     view.erase(0, view.find(' ') + 1);
-    pSizeY = view.substr(0, view.find(' '));
+    sizeY = view.substr(0, view.find(' '));
 }
-int Routing::calculateDirection(){
-    float pi=2*acos(0);
-    if (angle<=(pi/2)){
-        return 1;
-    }else if(angle>(pi/2)&&angle<=pi){
-        return 2;
-    }else if(angle>pi && angle<=((3*pi)/2)){
-        return 3;
-    }else if(angle>((3*pi)/2)&&angle<=2*pi){
-        return 4;
-    }
-    return 0;
-}
-void Routing::calculateDistance(Path* path, float vX, float vY, int pNum) {
 
-    float distanceX;
-    float distanceY;
-
-    vector<float> pVectorX = path->getPathsX();
-    vector<float> pVectorY = path->getPathsY();
-
-    if (pNum=1){
-        distanceX = frames / abs(((stoi(sizeX) - pVectorX[pVectorX.size() - 1]) / vX));
-        distanceY = frames / abs(((pVectorY[pVectorY.size() - 1])/ vY));   
-    }else if(pNum=2){
-        distanceX = frames / abs(((pVectorX[pVectorX.size() - 1]) / vX));
-        distanceY = frames / abs(((pVectorY[pVectorY.size() - 1]) / vY));   
-    }else if(pNum=3){
-        distanceX = frames / abs(((pVectorX[pVectorX.size() - 1]) / vX));
-        distanceY = frames / abs(((stoi(sizeY) - pVectorY[pVectorY.size() - 1]) / vY));   
-
-    }else if(pNum=4){
-        distanceX = frames / abs(((stoi(sizeX) - pVectorX[pVectorX.size() - 1]) / vX));
-        distanceY = frames / abs(((stoi(sizeY) - pVectorY[pVectorY.size() - 1]) / vY));
-    }
-    if (distanceX > distanceY)
-    {
-        path->setFrames(round(distanceX));                           
-    }
-    else
-    {
-        path->setFrames(round(distanceY));
-    }
-}
-void Routing::calculate_route()
+vector<vector<float>> Routing::calculate_route(int frames, float angulo)
 {
-    float vX = this->frames;
+    vector<vector<float>> coordenadas;
+    float vX = vX + frames;
     float vY = 0;
-    this->angle = (this->angle * 3.1415) / 180.0;
+    angulo = (angulo * 3.1415) / 180.0;
 
-    float new_vX = (vX * cos(this->angle)) + (vY * sin(this->angle));
-    float new_vY = -(vX * sin(this->angle)) + (vY * cos(this->angle));
+    float new_vX = (vX * cos(angulo)) + (vY * sin(angulo));
+    float new_vY = -(vX * sin(angulo)) + (vY * cos(angulo));
 
     vX = new_vX;
     vY = new_vY;
-    int selector = 0;
-    vector<Path> paths;
-
-    int num = calculateDirection();
-    for (auto path : pathsIntersected) {
-        calculateDistance(path, vX, vY, num);
-    }
-
-    int cont_Frames = 0;
-    int listSelector = 0;
-
-    while (cont_Frames < this->frames) {
-        vector<float> vectorX = pathsIntersected[listSelector]->getPathsX();
-        vector<float> vectorY = pathsIntersected[listSelector]->getPathsY();
-
-        if (pathsIntersected[listSelector]->movePath())
+    int selector=0;
+    int cont_Frames=0;
+    while (cont_Frames<frames)
+    {
+        vector<float> vectorX = valuesPaths[selector];
+        vector<float> vectorY = valuesPaths[selector+ 1];
+        bool continuar = true;
+        for (int j = 0; j < vectorX.size(); j++)
         {
-            for (int j = 0; j < vectorX.size(); j++)
+            if (vectorX[j] > stoi(sizeX))
             {
-                vectorX[j] += vX;
+                continuar = false;
+                break;
             }
-            for (int j = 0; j < vectorY.size(); j++)
-            {
-                vectorY[j] += vY;
-            }
-            pathsIntersected[listSelector]->setVectors(vectorX, vectorY);
+            vectorX[j] += vX;
         }
-
-        listSelector++;
-
-        if (listSelector >= pathsIntersected.size()) {
-            notify();
-            listSelector = 0;
+        for (int j = 0; j < vectorY.size() && continuar == true; j++)
+        {
+            if (vectorY[j] > stoi(sizeY))
+            {
+                break;
+            }
+            vectorY[j] += vY;
+        }
+        selector++;
+        if(selector>=valuesPaths.size()){
+            //generador
+            selector=0;
             cont_Frames++;
         }
     }
-    return;
+    return coordenadas;
 }
