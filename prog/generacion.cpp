@@ -1,12 +1,11 @@
 #include "generacion.h"
 
-generacion::generacion(tinyxml2::XMLDocument &doc, vector<string> typePaths) {
+generacion::generacion(tinyxml2::XMLDocument &doc) {
     this->doc = &doc;
-    this->typePaths = typePaths;
 }
 
-void generacion::update(vector<vector<float>> positionPaths) {
-    this->positionPaths = positionPaths;
+void generacion::update(vector<Path*> pPathsIntersected) {
+    this->pathsIntersected = pPathsIntersected;
     generateFile();
 }
 
@@ -15,17 +14,16 @@ void generacion::generateFile() {
     tinyxml2::XMLElement* groupPaths = this->doc->NewElement("g");
     tinyxml2::XMLElement* newPath;
 
-    vector<vector<float>> tempPositionPaths = this->positionPaths;
-    int positionSelector = 0;
     int moveSelector = 0;
+    int pathSelector = 0;
 
-    for (string path : this->typePaths) {
+    while (pathSelector < pathsIntersected.size()) {
 
         int charSelector = 0;
         string attributePath = "M ";
 
-        vector<float> valuesX = tempPositionPaths[positionSelector];
-        vector<float> valuesY = tempPositionPaths[positionSelector + 1];
+        vector<float> valuesX = pathsIntersected[pathSelector]->getPathsX();
+        vector<float> valuesY = pathsIntersected[pathSelector]->getPathsY();
 
         attributePath += to_string(valuesX[valuesX.size() - 1]) + " " + to_string(valuesY[valuesY.size() - 1]) + " ";
 
@@ -41,6 +39,8 @@ void generacion::generateFile() {
         int y2 = 0;
         int x3 = 0;
         int y3 = 0;
+
+        string path = pathsIntersected[pathSelector]->getTypePaths();
 
         while (charSelector <= path.size()) {
 
@@ -79,7 +79,7 @@ void generacion::generateFile() {
         newPath->SetAttribute("d", attributePath.c_str());
         groupPaths->InsertEndChild(newPath);
 
-        positionSelector += 2;
+        pathSelector++;
     }
 
     string fileTittle = "C:/Users/deyne/Desktop/asd/images/svg/NuevoGenerado-" + to_string((this->fileCounter)++) + ".svg";

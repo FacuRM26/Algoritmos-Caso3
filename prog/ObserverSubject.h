@@ -1,12 +1,14 @@
 #ifndef SUBJECT_OBSERVER_H
 #define SUBJECT_OBSERVER_H
 
+#include "path.h"
+
 #include <vector>
 using namespace std;
 
 class Observer {
 public:
-    virtual void update(vector<vector<float>> positionPaths) = 0;
+    virtual void update(vector<Path*> pathsIntersected) = 0;
 };
 
 class Subject {

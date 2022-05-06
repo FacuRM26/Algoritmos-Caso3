@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "../tinyXML/tinyxml2.cpp"
 #include "ObserverSubject.h"
+#include "path.h"
 using namespace std;
 
 class seleccion : public Subject {
@@ -17,6 +18,8 @@ private:
     tinyxml2::XMLDocument* doc;
     vector<tinyxml2::XMLElement*> paths;
     vector<vector<int>> userColors;
+
+    vector<Path*> pathsIntersected;
 
     vector<string> typePath;
     vector<float> pathsArea;
@@ -33,6 +36,7 @@ private:
 
 public:
     seleccion(int userPoints[], int size_userPoints, int userColors[], int size_userColors, tinyxml2::XMLDocument &doc);
+    ~seleccion();
     void selectPaths();
 
     void attach(Observer* router);
