@@ -7,9 +7,11 @@
 #include <iostream>
 #include <algorithm>
 #include "../tinyXML/tinyxml2.cpp"
+#include "ObserverSubject.h"
+#include "path.h"
 using namespace std;
 
-class seleccion {
+class seleccion : public Subject {
 private:
     int* userPoints;
     int size_userPoints;
@@ -17,9 +19,13 @@ private:
     vector<tinyxml2::XMLElement*> paths;
     vector<vector<int>> userColors;
 
+    vector<Path*> pathsIntersected;
+
     vector<string> typePath;
     vector<float> pathsArea;
     vector<vector<float>> pathValues;
+
+    Observer* current_router = 0;
 
     void getMoveValues(string moveSection, float *Move_x, float *Move_y);
     void getCurveValues(string curveSection, vector<float> curvePoints[], float Move_x, float Move_y, string* types);
@@ -30,7 +36,11 @@ private:
 
 public:
     seleccion(int userPoints[], int size_userPoints, int userColors[], int size_userColors, tinyxml2::XMLDocument &doc);
+    ~seleccion();
     void selectPaths();
+
+    void attach(Observer* router);
+    void notify();
 
     vector<string> getTypePath();
     vector<float> getPathsArea();

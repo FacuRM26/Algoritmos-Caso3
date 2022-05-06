@@ -1,5 +1,13 @@
 #include "seleccion.h"
 
+void seleccion::attach(Observer* router) {
+    this->current_router = router;
+}
+void seleccion::notify() {
+    cout << "\nProceso de seleccion finalizado\n";
+    this->current_router->update(this->pathsIntersected);
+}
+
 seleccion::seleccion(int userPoints[], int size_userPoints, int userColors[], int size_userColors, tinyxml2::XMLDocument &doc) {
     this->userPoints = userPoints;
     this->size_userPoints = size_userPoints;
@@ -12,6 +20,11 @@ seleccion::seleccion(int userPoints[], int size_userPoints, int userColors[], in
 
     // Save all the colors into RGB values
     saveRGBColors(userColors, size_userColors);
+}
+seleccion::~seleccion() {
+    for (auto i : pathsIntersected) {
+        delete i;
+    }
 }
 
 // Save all the paths in a vector
@@ -156,20 +169,22 @@ void seleccion::selectPaths() {
 	string moveSection;
 	string curveSection;
     int color_Value = 0x000000;
+    string actualColor = "#000000";
 	char curveTo_Character = 'c';
 
-    int countPaths = 0;
-
     for (tinyxml2::XMLElement* pathSelector : paths) {
+    
         // Get the color attribute
-        color_Value = 0x000000;
         const tinyxml2::XMLAttribute* fillAttribute = pathSelector->FindAttribute("fill");
+        color_Value = 0x000000;
+        actualColor = "#000000";
 
-        // if (fillAttribute) {
-        //     color_Value = stoi(string(fillAttribute->Value()).substr(1, 6), 0, 16);
-        // }
-        // if (!checkColorIntersection(color_Value))
-        //     continue;
+        if (fillAttribute) {
+            actualColor = fillAttribute->Value();
+            color_Value = stoi(string(actualColor).substr(1, 6), 0, 16);
+        }
+        if (!checkColorIntersection(color_Value))
+            continue;
 
         // Get the full value of 'd'
 		att_Value = pathSelector->FindAttribute("d")->Value();
@@ -189,24 +204,30 @@ void seleccion::selectPaths() {
         vector<float> curvePoints[] = {{}, {}};
         getCurveValues(curveSection, curvePoints, Move_x, Move_y, &typePath_Chars);
 
+        // ------- PRUEBA
+        vector<float> tempX = curvePoints[0];
+        vector<float> tempY = curvePoints[1];
+
         // See if the path intersect some userPoint
         float majorX = 0.0;
         float minorX = 0.0;
         float majorY = 0.0;
         float minorY = 0.0;
         if (pathIntersect(curvePoints, &majorX, &minorX, &majorY, &minorY)) {
-            countPaths++;
 
-            typePath.push_back(typePath_Chars);
-            pathValues.push_back(curvePoints[0]);
-            pathValues.push_back(curvePoints[1]);
+            tempX.push_back(Move_x);
+            tempY.push_back(Move_y);
+
             pathsArea.push_back(majorX);
             pathsArea.push_back(minorX);
             pathsArea.push_back(majorY);
             pathsArea.push_back(minorY);
+
+            pathsIntersected.push_back(new Path(tempX, tempY, pathsArea, actualColor, typePath_Chars));
         }
     }
-    cout << "\nPaths Intersecados: " << countPaths;
+    cout << "\nPaths Intersecados: " << pathsIntersected.size();
+    notify();
 }
 
 vector<string> seleccion::getTypePath() {

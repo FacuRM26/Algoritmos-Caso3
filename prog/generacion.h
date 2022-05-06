@@ -3,15 +3,22 @@
 #define GENERACION_H
 
 #include <iostream>
-#include "../tinyXML/tinyxml2.cpp"
+#include "ObserverSubject.h"
 using namespace std;
 
-class generacion {
+class generacion : public Observer {
 private:
+    int fileCounter = 1;
+    tinyxml2::XMLDocument* doc;
+    vector<string> typePaths;
+
+    vector<Path*> pathsIntersected;
 
 public:
-    generacion();
-    ~generacion();
+    generacion(tinyxml2::XMLDocument &doc);
+
+    void update(vector<Path*> pPathsIntersected);
+    void generateFile();
 };
 
 
