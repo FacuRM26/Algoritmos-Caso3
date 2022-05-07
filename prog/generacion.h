@@ -14,6 +14,8 @@ private:
 
     vector<Path*> pathsIntersected;
 
+    string generateAttribute(int* x_Selector, int* y_Selector, vector<float> valuesX, vector<float> valuesY, char typePath);
+
 public:
     generacion(tinyxml2::XMLDocument &doc);
 
