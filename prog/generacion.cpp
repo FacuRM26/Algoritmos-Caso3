@@ -6,7 +6,12 @@ generacion::generacion(tinyxml2::XMLDocument &doc) {
 
 void generacion::update(vector<Path*> pPathsIntersected) {
     this->pathsIntersected = pPathsIntersected;
-    generateFile();
+    finishGeneratePath = false;
+
+    thread threadFileGenerator(&generacion::generateFile, this);
+
+    generatePath();
+    threadFileGenerator.join();
 }
 
 string generacion::generateAttribute(int* x_Selector, int* y_Selector, vector<float> valuesX, vector<float> valuesY, char typePath) {
@@ -46,12 +51,8 @@ string generacion::generateAttribute(int* x_Selector, int* y_Selector, vector<fl
     return attributePath;
 }
 
-void generacion::generateFile() {
-
-    tinyxml2::XMLElement* groupPaths = this->doc->NewElement("g");
+void generacion::generatePath() {
     tinyxml2::XMLElement* newPath;
-
-    int moveSelector = 0;
     int pathSelector = 0;
 
     while (pathSelector < pathsIntersected.size()) {
@@ -120,18 +121,26 @@ void generacion::generateFile() {
         newPath->SetAttribute("transform", att_Transform.c_str());
         newPath->SetAttribute("fill", colorPath.c_str());
 
-        groupPaths->InsertEndChild(newPath);
-
+        this->queuePaths.push(newPath);
+        
         pathSelector++;
     }
-
-    string fileTittle = "C:/Users/deyne/Desktop/asd/images/svg/NuevoGenerado-" + to_string((this->fileCounter)++) + ".svg";
-
-    doc->FirstChildElement()->InsertEndChild(groupPaths);
-    doc->SaveFile(fileTittle.c_str());
-
-    groupPaths->DeleteChildren();
+    finishGeneratePath = true;
 }
 
+void generacion::generateFile() {
 
+    string fileTittle = "C:/Users/deyne/Desktop/asd/images/svg/NuevoGenerado-" + to_string((this->fileCounter)++) + ".svg";
+    tinyxml2::XMLElement* groupPaths = doc->NewElement("g");
+    
+    while(!finishGeneratePath || !this->queuePaths.empty()) {
+        while (!this->queuePaths.empty()) {
+            groupPaths->InsertEndChild(this->queuePaths.front());
+            this->queuePaths.pop();
+        }
+    }
+    doc->FirstChildElement()->InsertEndChild(groupPaths);
+    doc->SaveFile(fileTittle.c_str());
+    groupPaths->DeleteChildren();
+}
 
