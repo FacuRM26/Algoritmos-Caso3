@@ -19,15 +19,20 @@ void generacion::generateFile() {
 
     while (pathSelector < pathsIntersected.size()) {
 
+        newPath = this->doc->NewElement("path");
+
         int charSelector = 0;
         string attributePath = "M ";
 
+        string colorPath = pathsIntersected[pathSelector]->getColor();
         vector<float> valuesX = pathsIntersected[pathSelector]->getPathsX();
         vector<float> valuesY = pathsIntersected[pathSelector]->getPathsY();
+        string path = pathsIntersected[pathSelector]->getTypePaths();
 
-        attributePath += to_string(valuesX[valuesX.size() - 1]) + " " + to_string(valuesY[valuesY.size() - 1]) + " ";
+        float Move_x = valuesX[valuesX.size() - 1];
+        float Move_y = valuesY[valuesY.size() - 1];
 
-        newPath = this->doc->NewElement("path");
+        attributePath += to_string(Move_x) + " " + to_string(Move_y) + " ";
 
         int x_Selector = 1;
         int y_Selector = 1;
@@ -40,11 +45,32 @@ void generacion::generateFile() {
         int x3 = 0;
         int y3 = 0;
 
-        string path = pathsIntersected[pathSelector]->getTypePaths();
-
         while (charSelector <= path.size()) {
 
             actualType = path[charSelector++];
+
+            if ((charSelector - 1) == path.size()/2) {
+                switch (actualType) {
+                    case 'C':
+                        x_Selector += 3;
+                        y_Selector += 3;
+                    break;
+                    
+                    case 'H':
+                        x_Selector++;
+                    break;
+                    
+                    case 'V':
+                        y_Selector++;
+                    break;
+                    
+                    case 'L':
+                        x_Selector++;
+                        y_Selector++;
+                    break;
+                }
+                continue;
+            }
             
             switch (actualType) {
             case 'C':
@@ -77,6 +103,13 @@ void generacion::generateFile() {
 
         attributePath += "Z";
         newPath->SetAttribute("d", attributePath.c_str());
+
+        string att_Transform = "";
+        att_Transform += "scale(0.5) " ;
+        att_Transform += "translate(" + to_string(Move_x) + ", " + to_string(Move_y) + ")";
+        newPath->SetAttribute("transform", att_Transform.c_str());
+        newPath->SetAttribute("fill", colorPath.c_str());
+
         groupPaths->InsertEndChild(newPath);
 
         pathSelector++;

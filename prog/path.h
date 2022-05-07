@@ -47,6 +47,9 @@ public:
     string getTypePaths() {
         return typePath;
     }
+    string getColor() {
+        return color;
+    }
 
     bool movePath(){
         if (count<amountFrames){
