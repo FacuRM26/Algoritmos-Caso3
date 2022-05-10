@@ -1,6 +1,6 @@
 
-#ifndef SELECCION_H
-#define SELECCION_H
+#ifndef SELECTION_H
+#define SELECTION_H
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "path.h"
 using namespace std;
 
-class seleccion : public Subject {
+class Selection : public Subject {
 private:
     int* userPoints;
     int size_userPoints;
@@ -35,16 +35,12 @@ private:
     bool pathIntersect(vector<float> curvePoints[], float* majorX, float* minorX, float* majorY, float* minorY);
 
 public:
-    seleccion(int userPoints[], int size_userPoints, int userColors[], int size_userColors, tinyxml2::XMLDocument &doc);
-    ~seleccion();
+    Selection(int userPoints[], int size_userPoints, int userColors[], int size_userColors, tinyxml2::XMLDocument &doc);
+    ~Selection();
     void selectPaths();
 
     void attach(Observer* router);
     void notify();
-
-    vector<string> getTypePath();
-    vector<float> getPathsArea();
-    vector<vector<float>> getPathValues();
 };
 
 #endif

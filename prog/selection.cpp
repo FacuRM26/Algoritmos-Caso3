@@ -1,17 +1,17 @@
-#include "seleccion.h"
+#include "selection.h"
 
-void seleccion::attach(Observer* router) {
-    this->current_router = router;
+void Selection::attach(Observer* pRouter) {
+    this->current_router = pRouter;
 }
-void seleccion::notify() {
-    cout << "\nProceso de seleccion finalizado\n";
+void Selection::notify() {
+    cout << "\n > Proceso de seleccion finalizado\n";
     this->current_router->update(this->pathsIntersected);
 }
 
-seleccion::seleccion(int userPoints[], int size_userPoints, int userColors[], int size_userColors, tinyxml2::XMLDocument &doc) {
-    this->userPoints = userPoints;
-    this->size_userPoints = size_userPoints;
-    this->doc = &doc;
+Selection::Selection(int pUserPoints[], int pSize_userPoints, int pUserColors[], int pSize_userColors, tinyxml2::XMLDocument &pDoc) {
+    this->userPoints = pUserPoints;
+    this->size_userPoints = pSize_userPoints;
+    this->doc = &pDoc;
 
     // Save all the paths in a vector
     tinyxml2::XMLElement* elementSelector;
@@ -19,51 +19,51 @@ seleccion::seleccion(int userPoints[], int size_userPoints, int userColors[], in
     getAllPaths(elementSelector);
 
     // Save all the colors into RGB values
-    saveRGBColors(userColors, size_userColors);
+    saveRGBColors(pUserColors, pSize_userColors);
 }
-seleccion::~seleccion() {
+Selection::~Selection() {
     for (auto i : pathsIntersected) {
         delete i;
     }
 }
 
 // Save all the paths in a vector
-void seleccion::getAllPaths(tinyxml2::XMLElement* element) {
-    if (element) {
-        if (!string(element->Value()).compare("path")) {
-            this->paths.push_back(element);
+void Selection::getAllPaths(tinyxml2::XMLElement* pElement) {
+    if (pElement) {
+        if (!string(pElement->Value()).compare("path")) {
+            this->paths.push_back(pElement);
         }
-        if (!element->NoChildren()) {
-            getAllPaths(element->FirstChildElement());
+        if (!pElement->NoChildren()) {
+            getAllPaths(pElement->FirstChildElement());
         }
-        getAllPaths(element->NextSiblingElement());
+        getAllPaths(pElement->NextSiblingElement());
     }
 }
-void seleccion::saveRGBColors(int userColors[], int size) {
-    for (int i = 0; i < size; i++) {
-        int color = userColors[i];
-        int b = color%256; color = color/256;
-        int g = color%256; color = color/256;
-        int r = color%256;
+void Selection::saveRGBColors(int pUserColors[], int pSize) {
+    for (int i = 0; i < pSize; i++) {
+        int color = pUserColors[i];
+        int blue = color%256; color = color/256;
+        int green = color%256; color = color/256;
+        int red = color%256;
 
-        this->userColors.push_back({r, g, b});
+        this->userColors.push_back({red, green, blue});
     }
 }
 
 // Converting moves values into coordinates numbers
-void seleccion::getMoveValues(string moveSection, float *Move_x, float *Move_y) {
+void Selection::getMoveValues(string pMoveSection, float *pMove_x, float *pMove_y) {
     // Clean not integers chars in the strings
-    if (moveSection[0] > '9')
-        moveSection.erase(0, 1);
+    if (pMoveSection[0] > '9')
+        pMoveSection.erase(0, 1);
 
     // Convert string values into numbers
-    int comaPosition = moveSection.find(',');
-    *Move_x = stof(moveSection.substr(0, comaPosition));
-    *Move_y = stof(moveSection.substr(comaPosition + 1, moveSection.length() - comaPosition));
+    int comaPosition = pMoveSection.find(',');
+    *pMove_x = stof(pMoveSection.substr(0, comaPosition));
+    *pMove_y = stof(pMoveSection.substr(comaPosition + 1, pMoveSection.length() - comaPosition));
 }
 
 // Converting curves values (relative and absolute) into coordinates numbers(absolutes)
-void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[], float Move_x, float Move_y, string* types) {
+void Selection::getCurveValues(string pCurveSection, vector<float> pCurvePoints[], float pMove_x, float pMove_y, string* pTypes) {
     // Search for the positions of the separators and convert the values between them
     string separatorsChars = " -,CcHhVvLlZz";
     size_t separator1 = 0;
@@ -74,17 +74,17 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
     int axisSelector = 0;
     bool horizontalCase = false;
 
-    separator1 = curveSection.find_first_of(separatorsChars, 0);
+    separator1 = pCurveSection.find_first_of(separatorsChars, 0);
 
-    while (toupper(curveSection[separator1]) != 'Z') {
-        separator2 = curveSection.find_first_of(separatorsChars, separator1 + 1);
-        separator2 = (separator2-1 != separator1) ? separator2 : curveSection.find_first_of(separatorsChars, separator2 + 1);
+    while (toupper(pCurveSection[separator1]) != 'Z') {
+        separator2 = pCurveSection.find_first_of(separatorsChars, separator1 + 1);
+        separator2 = (separator2-1 != separator1) ? separator2 : pCurveSection.find_first_of(separatorsChars, separator2 + 1);
 
         if (separator2 != string::npos) {
 
-            char currentSeparator = toupper(curveSection[separator1]);
+            char currentSeparator = toupper(pCurveSection[separator1]);
             if (currentSeparator >= 'A')
-                types->push_back(toupper(curveSection[separator1]));
+                pTypes->push_back(toupper(pCurveSection[separator1]));
 
             switch (currentSeparator) {
                 case 'H':
@@ -95,19 +95,19 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
                     axisSelector = 1;
                     break;
             }
-            if (curveSection[separator1] >= 'a') {
-                moveValues[0] = Move_x;
-                moveValues[1] = Move_y;
+            if (pCurveSection[separator1] >= 'a') {
+                moveValues[0] = pMove_x;
+                moveValues[1] = pMove_y;
             }
-            else if (curveSection[separator1] >= 'A') {
+            else if (pCurveSection[separator1] >= 'A') {
                 moveValues[0] = 0;
                 moveValues[1] = 0;
             }
 
-            separator1 = (curveSection[separator1] == '-') ? separator1 - 1 : separator1;
+            separator1 = (pCurveSection[separator1] == '-') ? separator1 - 1 : separator1;
 
-            point = curveSection.substr(separator1 + 1, separator2 - separator1 - 1);
-            curvePoints[axisSelector].push_back(stof(point) + moveValues[axisSelector]);
+            point = pCurveSection.substr(separator1 + 1, separator2 - separator1 - 1);
+            pCurvePoints[axisSelector].push_back(stof(point) + moveValues[axisSelector]);
             
             if (!horizontalCase)
                 axisSelector = (1 - axisSelector);
@@ -122,29 +122,29 @@ void seleccion::getCurveValues(string curveSection, vector<float> curvePoints[],
     }
 }
 // Check if there is any user-points inside the curve points
-bool seleccion::pathIntersect(vector<float> curvePoints[], float* majorX, float* minorX, float* majorY, float* minorY) {
-    sort(curvePoints[0].begin(), curvePoints[0].end());
-    sort(curvePoints[1].begin(), curvePoints[1].end());
+bool Selection::pathIntersect(vector<float> pCurvePoints[], float* pMajorX, float* pMinorX, float* pMajorY, float* pMinorY) {
+    sort(pCurvePoints[0].begin(), pCurvePoints[0].end());
+    sort(pCurvePoints[1].begin(), pCurvePoints[1].end());
 
-    *majorX = curvePoints[0][curvePoints[0].size() - 1];
-    *minorX = curvePoints[0][0];
+    *pMajorX = pCurvePoints[0][pCurvePoints[0].size() - 1];
+    *pMinorX = pCurvePoints[0][0];
 
-    *majorY = curvePoints[1][curvePoints[1].size() - 1];
-    *minorY = curvePoints[1][0];
+    *pMajorY = pCurvePoints[1][pCurvePoints[1].size() - 1];
+    *pMinorY = pCurvePoints[1][0];
 
     for (int i = 0; i < this->size_userPoints; i += 2) {
-        if ((this->userPoints[i] >= *minorX && this->userPoints[i] <= *majorX) &&
-            (this->userPoints[i + 1] >= *minorY && this->userPoints[i + 1] <= *majorY)) {
+        if ((this->userPoints[i] >= *pMinorX && this->userPoints[i] <= *pMajorX) &&
+            (this->userPoints[i + 1] >= *pMinorY && this->userPoints[i + 1] <= *pMajorY)) {
             return true;
         }
     }
     return false;
 }
 // Check if there is any color that matches with the user colors
-bool seleccion::checkColorIntersection(int color) {
-    int b = color%256; color = color/256;
-	int g = color%256; color = color/256;
-	int r = color%256;
+bool Selection::checkColorIntersection(int pColor) {
+    int b = pColor%256; pColor = pColor/256;
+	int g = pColor%256; pColor = pColor/256;
+	int r = pColor%256;
 
     int diff1 = 0;
 	int diff2 = 0;
@@ -164,13 +164,16 @@ bool seleccion::checkColorIntersection(int color) {
 }
 
 // Select paths that intersect the user points and save them in a file
-void seleccion::selectPaths() {
+void Selection::selectPaths() {
+    cout << "\n > Iniciando proceso de seleccion...\n";
     string att_Value;
 	string moveSection;
 	string curveSection;
     int color_Value = 0x000000;
     string actualColor = "#000000";
 	char curveTo_Character = 'c';
+
+    cout << "Cantidad total de paths: " << paths.size() << endl;
 
     for (tinyxml2::XMLElement* pathSelector : paths) {
     
@@ -181,7 +184,12 @@ void seleccion::selectPaths() {
 
         if (fillAttribute) {
             actualColor = fillAttribute->Value();
-            color_Value = stoi(string(actualColor).substr(1, 6), 0, 16);
+            try {
+                color_Value = stoi(string(actualColor).substr(1, 6), 0, 16);
+            }
+            catch(exception &err) {
+                color_Value = 0x000000;
+            }
         }
         if (!checkColorIntersection(color_Value))
             continue;
@@ -226,18 +234,6 @@ void seleccion::selectPaths() {
             pathsIntersected.push_back(new Path(tempX, tempY, pathsArea, actualColor, typePath_Chars));
         }
     }
-    cout << "\nPaths Intersecados: " << pathsIntersected.size();
+    cout << "Paths Intersecados: " << pathsIntersected.size();
     notify();
 }
-
-vector<string> seleccion::getTypePath() {
-    return this->typePath;
-}
-vector<float> seleccion::getPathsArea() {
-    return this->pathsArea;
-}
-vector<vector<float>> seleccion::getPathValues() {
-    return this->pathValues;
-}
-
-

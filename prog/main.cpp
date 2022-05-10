@@ -1,48 +1,37 @@
-
-#include "seleccion.cpp"
-#include "routing.cpp"
-#include "generacion.cpp"
-#include <math.h>
-#include <list>
-#include <utility>
-#include <queue>
-
-
-void printSVG(tinyxml2::XMLDocument &doc, tinyxml2::XMLPrinter &printer) {
-	// Print in memory
-	doc.Print(&printer);
-	cout << printer.CStr() << endl;
-}
+#include "selection.cpp"
+#include "router.cpp"
+#include "generation.cpp"
 
 int main() {
 
+	int userPoints[] = {120, 590, 1000, 600, 500, 530, 230, 600, 700, 700};
+	int sizeUserPoints = 10;
+	int userColors[] = {0x07bed1, 0xe3e3e3, 0x3b3b3b};
+	int sizeUserColors = 3;
+	int frames = 50;
+	float anglee = 4.7123;
+	string fileRoute = "../arch_svg/tesla.svg";
+
+
 	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLPrinter printer;
-	
-	if (doc.LoadFile("../arch_svg/wifiColores.svg")) {
+	if (doc.LoadFile(fileRoute.c_str())) {
 		cout << "\nFalla en la lectura del archivo!\n";
 		return 0;
 	}
 
-	int puntos[] = {2000, 2000, 2500, 3700, 1800, 300, 3605, 1123, 5642, 800};
-	int colores[] = {0x00ff00};
-	int frames = 50;
-	float angulo = 120.0;
+	Selection selection(userPoints, sizeUserPoints, userColors, sizeUserColors, doc);
+	Router* router = new Router(doc, frames, anglee);
+	Generation* generation = new Generation(doc, fileRoute);
 
+	selection.attach(router);
+	router->attach(generation);
 
-	seleccion Seleccion(puntos, 10, colores, 1, doc);
-	Routing* routing = new Routing(doc, frames, angulo);
-	generacion* generador = new generacion(doc);
-
-	Seleccion.attach(routing);
-	routing->attach(generador);
-
-	Seleccion.selectPaths();
+	selection.selectPaths();
 
 	cout << "\nProceso Terminado\n";
 
-	delete routing;
-	delete generador;
+	delete router;
+	delete generation;
 
 	return 0;
 }

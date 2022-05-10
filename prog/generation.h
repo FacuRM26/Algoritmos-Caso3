@@ -1,6 +1,5 @@
-
-#ifndef GENERACION_H
-#define GENERACION_H
+#ifndef GENERATION_H
+#define GENERATION_H
 
 #include <iostream>
 #include <thread>
@@ -9,27 +8,24 @@
 #include "ObserverSubject.h"
 using namespace std;
 
-class generacion : public Observer {
+class Generation : public Observer {
 private:
     int fileCounter = 1;
     tinyxml2::XMLDocument* doc;
-    vector<string> typePaths;
-
     vector<Path*> pathsIntersected;
-
     queue<tinyxml2::XMLElement*> queuePaths;
+    string fileName;
     volatile bool finishGeneratePath;
 
-    string generateAttribute(int* x_Selector, int* y_Selector, vector<float> valuesX, vector<float> valuesY, char typePath);
+    string generateAttribute(int* pX_Selector, int* pY_Selector, vector<float> pValuesX, vector<float> pValuesY, char pTypePath);
+    void lessAppearances(int* pIndex, int* pAppearences, string pType);
     void generatePath();
     void generateFile();
 
 
 public:
-    generacion(tinyxml2::XMLDocument &doc);
+    Generation(tinyxml2::XMLDocument &pDoc, string fileName);
     void update(vector<Path*> pPathsIntersected);
 };
-
-
 
 #endif

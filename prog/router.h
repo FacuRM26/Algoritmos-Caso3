@@ -1,17 +1,14 @@
-#ifndef ROUTING_H
-#define ROUTING_H
+#ifndef ROUTER_H
+#define ROUTER_H
 
-#include <string>
 #include <vector>
 #include <iostream>
-#include <list>
 #include <cmath>
-#include <algorithm>
 #include <utility>
 
 using namespace std;
 
-class Routing : public Observer, public Subject {
+class Router : public Observer, public Subject {
 private:
     string sizeX;
     string sizeY;
@@ -25,11 +22,11 @@ private:
     
     void sizeBox(tinyxml2::XMLDocument &doc, string &sizeX, string &sizeY);
     void calculateDistance(Path* path, float vX, float vY, int pNum);
+    void calculate_route();
     int calculateDirection();
 
 public:
-    Routing(tinyxml2::XMLDocument &doc, int frames, float angulo);
-    void calculate_route();
+    Router(tinyxml2::XMLDocument &doc, int frames, float angulo);
 
     void update(vector<Path*> pPathsIntersected);
     void attach(Observer* obs);
